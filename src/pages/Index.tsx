@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
 import AuthButton from '@/components/auth/AuthButton';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,7 +11,15 @@ import cocktailShakerHero from '@/assets/cocktail-hero-updated.png';
 
 const Index = () => {
   const { user, loading, signInWithProvider, signOut } = useAuth();
+  const navigate = useNavigate();
   const [authLoading, setAuthLoading] = useState<'google' | 'apple' | null>(null);
+
+  // Mock test user data
+  const testUser = {
+    first_name: 'Yiru',
+    last_name: 'Yao',
+    email: 'yiru82@gmail.com'
+  };
 
   const handleAuth = async (provider: 'google' | 'apple') => {
     setAuthLoading(provider);
@@ -38,8 +47,9 @@ const Index = () => {
       <div className="min-h-screen bg-black text-white">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-800">
-          <h1 className="text-xl font-bold font-space-grotesk">My Bar</h1>
-          <User className="w-6 h-6" />
+          <div className="w-6 h-6" /> {/* Spacer for centering */}
+          <h1 className="text-xl font-bold font-space-grotesk text-center">{testUser.first_name}'s Bar</h1>
+          <User className="w-6 h-6 cursor-pointer" onClick={() => navigate('/profile')} />
         </div>
 
         <div className="px-6 py-6">
