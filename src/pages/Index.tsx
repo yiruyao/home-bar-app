@@ -62,12 +62,12 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-hero flex flex-col">
       {/* Hero Section with Cocktail Shaker */}
-      <div className="flex-1 flex items-center justify-center px-4 pt-16 pb-8">
+      <div className="flex-1 flex items-center justify-center px-4 pt-8 pb-4">
         <div className="text-center">
           <img 
             src={cocktailShakerHero}
             alt="Cocktail Shaker with Floating Ingredients"
-            className="w-64 h-64 mx-auto mb-8 object-contain"
+            className="w-48 h-48 mx-auto object-contain"
           />
         </div>
       </div>
