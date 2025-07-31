@@ -63,7 +63,7 @@ const Index = () => {
   return (
     <div className="min-h-screen flex flex-col">
       {/* Hero Section with Full Image */}
-      <div className="flex-1 flex items-center justify-center relative">
+      <div className="h-[60vh] flex items-center justify-center relative">
         <img 
           src={cocktailShakerHero}
           alt="Cocktail Hero"
