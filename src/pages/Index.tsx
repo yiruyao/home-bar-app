@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import AuthButton from '@/components/auth/AuthButton';
@@ -60,16 +61,14 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-hero flex flex-col">
-      {/* Hero Section with Cocktail Shaker */}
-      <div className="flex-1 flex items-center justify-center px-4 pt-8 pb-4">
-        <div className="text-center">
-          <img 
-            src={cocktailShakerHero}
-            alt="Cocktail Shaker with Floating Ingredients"
-            className="w-48 h-48 mx-auto object-contain"
-          />
-        </div>
+    <div className="min-h-screen flex flex-col">
+      {/* Hero Section with Full Image */}
+      <div className="flex-1 flex items-center justify-center relative">
+        <img 
+          src={cocktailShakerHero}
+          alt="Cocktail Hero"
+          className="w-full h-full object-cover absolute inset-0"
+        />
       </div>
 
       {/* Bottom Section with Auth */}
