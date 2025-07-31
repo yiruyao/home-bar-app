@@ -72,30 +72,30 @@ const Index = () => {
       </div>
 
       {/* Bottom Section with Auth */}
-      <div className="bg-gray-900 px-6 py-12">
-        <div className="max-w-sm mx-auto text-center space-y-8">
-          <div className="space-y-4">
-            <h1 className="text-3xl font-bold text-white">
+      <div className="bg-black px-6 py-12">
+        <div className="max-w-sm mx-auto text-center space-y-6">
+          <div className="space-y-3">
+            <h1 className="text-xl font-bold text-white font-space-grotesk">
               Welcome to Home Bar
             </h1>
-            <p className="text-gray-300 text-lg leading-relaxed">
+            <p className="text-gray-300 text-sm leading-relaxed font-space-grotesk">
               Manage your home bar inventory and get cocktail inspirations.
             </p>
           </div>
           
-          <div className="space-y-4">
+          <div className="space-y-3">
             <AuthButton
               provider="google"
               onClick={() => handleAuth('google')}
               loading={authLoading === 'google'}
-              className="w-full h-14 text-lg rounded-full"
+              className="w-full h-12 text-sm rounded-full font-space-grotesk"
             />
             
             <AuthButton
               provider="apple"
               onClick={() => handleAuth('apple')}
               loading={authLoading === 'apple'}
-              className="w-full h-14 text-lg rounded-full"
+              className="w-full h-12 text-sm rounded-full font-space-grotesk"
             />
           </div>
         </div>
