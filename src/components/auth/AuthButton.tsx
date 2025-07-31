@@ -38,7 +38,7 @@ const AuthButton: React.FC<AuthButtonProps> = ({
         </svg>
       ),
       text: 'Sign in with Google',
-      bgClass: 'bg-orange-500 hover:bg-orange-600',
+      bgClass: 'bg-black hover:bg-gray-800',
       textClass: 'text-white font-semibold'
     },
     apple: {
