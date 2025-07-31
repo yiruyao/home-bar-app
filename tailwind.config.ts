@@ -61,6 +61,15 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				orange: {
+					500: 'hsl(var(--orange-500))',
+					600: 'hsl(var(--orange-600))'
+				},
+				gray: {
+					700: 'hsl(var(--gray-700))',
+					800: 'hsl(var(--gray-800))',
+					900: 'hsl(var(--gray-900))'
 				}
 			},
 			borderRadius: {
@@ -91,9 +100,7 @@ export default {
 				'accordion-up': 'accordion-up 0.2s ease-out'
 			},
 			backgroundImage: {
-				'gradient-hero': 'var(--gradient-hero)',
-				'gradient-primary': 'var(--gradient-primary)',
-				'gradient-secondary': 'var(--gradient-secondary)'
+				'gradient-hero': 'var(--gradient-hero)'
 			},
 			boxShadow: {
 				'elegant': 'var(--shadow-elegant)',
