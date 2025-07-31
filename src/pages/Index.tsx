@@ -4,6 +4,7 @@ import AuthButton from '@/components/auth/AuthButton';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Toaster } from '@/components/ui/toaster';
+import cocktailShakerHero from '@/assets/cocktail-shaker-hero.png';
 
 const Index = () => {
   const { user, loading, signInWithProvider, signOut } = useAuth();
@@ -21,25 +22,25 @@ const Index = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-secondary/20">
-        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen flex items-center justify-center bg-gradient-hero">
+        <div className="w-8 h-8 border-4 border-white border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   if (user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/20">
+      <div className="min-h-screen bg-gradient-hero">
         <div className="container max-w-4xl mx-auto px-4 py-8">
-          <Card className="shadow-soft">
+          <Card className="shadow-soft bg-white/95 backdrop-blur-sm">
             <CardHeader className="text-center">
-              <CardTitle className="text-2xl font-bold text-primary">
+              <CardTitle className="text-2xl font-bold text-gray-900">
                 Welcome to Home Bar! 🍹
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="text-center">
-                <p className="text-muted-foreground mb-4">
+                <p className="text-gray-600 mb-4">
                   Hello {user.email}! You're successfully signed in.
                 </p>
                 <Button 
@@ -59,43 +60,46 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/20 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <Card className="shadow-elegant border-0 bg-card/95 backdrop-blur-sm">
-          <CardHeader className="text-center pb-8">
-            <div className="mx-auto mb-6 w-16 h-16 bg-gradient-primary rounded-2xl flex items-center justify-center shadow-soft">
-              <span className="text-2xl">🍹</span>
-            </div>
-            <CardTitle className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-              Home Bar
-            </CardTitle>
-            <p className="text-muted-foreground mt-2">
-              Create amazing cocktails at home
+    <div className="min-h-screen bg-gradient-hero flex flex-col">
+      {/* Hero Section with Cocktail Shaker */}
+      <div className="flex-1 flex items-center justify-center px-4 pt-16 pb-8">
+        <div className="text-center">
+          <img 
+            src={cocktailShakerHero}
+            alt="Cocktail Shaker with Floating Ingredients"
+            className="w-64 h-64 mx-auto mb-8 object-contain"
+          />
+        </div>
+      </div>
+
+      {/* Bottom Section with Auth */}
+      <div className="bg-gray-900 px-6 py-12">
+        <div className="max-w-sm mx-auto text-center space-y-8">
+          <div className="space-y-4">
+            <h1 className="text-3xl font-bold text-white">
+              Welcome to Home Bar
+            </h1>
+            <p className="text-gray-300 text-lg leading-relaxed">
+              Manage your home bar inventory and get cocktail inspirations.
             </p>
-          </CardHeader>
+          </div>
           
-          <CardContent className="space-y-4 px-8 pb-8">
-            <div className="space-y-3">
-              <AuthButton
-                provider="google"
-                onClick={() => handleAuth('google')}
-                loading={authLoading === 'google'}
-              />
-              
-              <AuthButton
-                provider="apple"
-                onClick={() => handleAuth('apple')}
-                loading={authLoading === 'apple'}
-              />
-            </div>
+          <div className="space-y-4">
+            <AuthButton
+              provider="google"
+              onClick={() => handleAuth('google')}
+              loading={authLoading === 'google'}
+              className="w-full h-14 text-lg rounded-full"
+            />
             
-            <div className="text-center pt-4">
-              <p className="text-xs text-muted-foreground">
-                By continuing, you agree to our Terms of Service and Privacy Policy
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+            <AuthButton
+              provider="apple"
+              onClick={() => handleAuth('apple')}
+              loading={authLoading === 'apple'}
+              className="w-full h-14 text-lg rounded-full"
+            />
+          </div>
+        </div>
       </div>
       <Toaster />
     </div>
