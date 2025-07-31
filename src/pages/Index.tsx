@@ -6,7 +6,7 @@ import AuthButton from '@/components/auth/AuthButton';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Toaster } from '@/components/ui/toaster';
-import { User, Grid3X3, Camera, Martini } from 'lucide-react';
+import { User, Grid3X3, Camera, Martini, Plus } from 'lucide-react';
 import cocktailShakerHero from '@/assets/cocktail-hero-updated.png';
 
 const Index = () => {
@@ -54,9 +54,17 @@ const Index = () => {
 
         <div className="px-6 py-6">
           {/* Total Items */}
-          <div className="bg-gray-800 rounded-lg p-4 mb-6">
-            <p className="text-gray-400 text-sm font-space-grotesk">Total Items</p>
-            <p className="text-3xl font-bold font-space-grotesk">18</p>
+          <div className="bg-gray-800 rounded-lg p-4 mb-6 flex items-center justify-between">
+            <div>
+              <p className="text-gray-400 text-sm font-space-grotesk">Total Items</p>
+              <p className="text-3xl font-bold font-space-grotesk">18</p>
+            </div>
+            <button 
+              onClick={() => navigate('/add-item')}
+              className="w-10 h-10 bg-amber-600 rounded-full flex items-center justify-center hover:bg-amber-700 transition-colors"
+            >
+              <Plus className="w-5 h-5 text-black" />
+            </button>
           </div>
 
           {/* Spirits Section */}
