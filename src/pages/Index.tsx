@@ -29,7 +29,10 @@ const Index = () => {
     );
   }
 
-  if (user) {
+  // Temporary: Show authenticated view for testing
+  const showAuthenticatedView = true;
+
+  if (user || showAuthenticatedView) {
     return (
       <div className="min-h-screen bg-black text-white">
         {/* Header */}
