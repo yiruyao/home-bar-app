@@ -67,7 +67,7 @@ const Index = () => {
         <img 
           src={cocktailShakerHero}
           alt="Cocktail Hero"
-          className="w-full h-full object-cover absolute inset-0"
+          className="w-full h-full object-contain"
         />
       </div>
 
