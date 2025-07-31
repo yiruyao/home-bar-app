@@ -5,7 +5,7 @@ import AuthButton from '@/components/auth/AuthButton';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Toaster } from '@/components/ui/toaster';
-import { User, Grid3X3, Camera, Filter } from 'lucide-react';
+import { User, Grid3X3, Camera, Martini } from 'lucide-react';
 import cocktailShakerHero from '@/assets/cocktail-hero-updated.png';
 
 const Index = () => {
@@ -39,9 +39,7 @@ const Index = () => {
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-800">
           <h1 className="text-xl font-bold font-space-grotesk">My Bar</h1>
-          <div className="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center">
-            <User className="w-5 h-5" />
-          </div>
+          <User className="w-6 h-6" />
         </div>
 
         <div className="px-6 py-6">
@@ -140,12 +138,12 @@ const Index = () => {
               <span className="text-xs font-space-grotesk text-white">Inventory</span>
             </div>
             <div className="flex flex-col items-center">
-              <Camera className="w-6 h-6 mb-1" />
+              <Camera className="w-6 h-6 mb-1 text-gray-400" />
               <span className="text-xs font-space-grotesk text-gray-400">Scan</span>
             </div>
             <div className="flex flex-col items-center">
-              <Filter className="w-6 h-6 mb-1" />
-              <span className="text-xs font-space-grotesk text-gray-400">Filter</span>
+              <Martini className="w-6 h-6 mb-1 text-gray-400" />
+              <span className="text-xs font-space-grotesk text-gray-400">Mix</span>
             </div>
           </div>
         </div>
