@@ -5,7 +5,7 @@ import AuthButton from '@/components/auth/AuthButton';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Toaster } from '@/components/ui/toaster';
-import cocktailShakerHero from '@/assets/cocktail-hero-new.png';
+import cocktailShakerHero from '@/assets/cocktail-shaker-hero.png';
 
 const Index = () => {
   const { user, loading, signInWithProvider, signOut } = useAuth();
