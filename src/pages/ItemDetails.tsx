@@ -4,6 +4,15 @@ import { ArrowLeft, Plus, Minus, Grid3X3, Camera, Martini } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import whiskeyBottle from '@/assets/whiskey-bottle.png';
+import ginBottle from '@/assets/gin-bottle.png';
+import tequilaBottle from '@/assets/tequila-bottle.png';
+import orangeLiqueurBottle from '@/assets/orange-liqueur-bottle.png';
+import amarettoBottle from '@/assets/amaretto-bottle.png';
+import coffeeLiqueurBottle from '@/assets/coffee-liqueur-bottle.png';
+import tonicWaterBottle from '@/assets/tonic-water-bottle.png';
+import gingerBeerBottle from '@/assets/ginger-beer-bottle.png';
+import cranberryJuiceBottle from '@/assets/cranberry-juice-bottle.png';
 
 const ItemDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -20,7 +29,7 @@ const ItemDetails = () => {
       category: 'spirits',
       description: 'A 100-proof straight rye whiskey perfect for classic cocktails like Manhattans and Old Fashioneds. Known for its spicy character and ability to cut through citrus and bitters.',
       quantity: 1,
-      picture_url: 'https://images.unsplash.com/photo-1569529465841-dfecdab7503b?w=400'
+      picture_url: whiskeyBottle
     },
     {
       id: '2', 
@@ -28,7 +37,7 @@ const ItemDetails = () => {
       category: 'spirits',
       description: 'A distinctive gin infused with cucumber and rose petals, offering a unique botanical profile that works beautifully in gin and tonics or martinis.',
       quantity: 1,
-      picture_url: 'https://images.unsplash.com/photo-1544145945-f90425340c7e?w=400'
+      picture_url: ginBottle
     },
     {
       id: '3',
@@ -36,7 +45,7 @@ const ItemDetails = () => {
       category: 'spirits',
       description: 'A premium 100% blue agave tequila with bright, crisp flavor perfect for margaritas and other agave-based cocktails. Clean finish with hints of pepper and citrus.',
       quantity: 1,
-      picture_url: 'https://images.unsplash.com/photo-1606467278097-3e6a3eaa4fb8?w=400'
+      picture_url: tequilaBottle
     },
     {
       id: '4',
@@ -44,7 +53,7 @@ const ItemDetails = () => {
       category: 'liqueurs', 
       description: 'Premium French orange liqueur made from sweet and bitter orange peels. Essential for classics like Margaritas, Cosmopolitans, and Sidecars.',
       quantity: 1,
-      picture_url: 'https://images.unsplash.com/photo-1578912996078-305d92249aa6?w=400'
+      picture_url: orangeLiqueurBottle
     },
     {
       id: '5',
@@ -52,7 +61,7 @@ const ItemDetails = () => {
       category: 'liqueurs',
       description: 'Italian almond liqueur with a distinctive sweet almond flavor and smooth finish. Perfect for Amaretto Sours or as a dessert drink ingredient.',
       quantity: 1, 
-      picture_url: 'https://images.unsplash.com/photo-1541532713592-79a0317b6b9d?w=400'
+      picture_url: amarettoBottle
     },
     {
       id: '6',
@@ -60,7 +69,7 @@ const ItemDetails = () => {
       category: 'liqueurs',
       description: 'Rich Mexican coffee liqueur made with rum, sugar, and arabica coffee. Essential for White Russians, Espresso Martinis, and Mudslides.',
       quantity: 1,
-      picture_url: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=400'
+      picture_url: coffeeLiqueurBottle
     },
     {
       id: '7',
@@ -68,7 +77,7 @@ const ItemDetails = () => {
       category: 'mixers',
       description: 'Premium tonic water made with natural quinine from the Congo. Provides the perfect bitter balance for gin and tonics with its crisp, clean taste.',
       quantity: 4,
-      picture_url: 'https://images.unsplash.com/photo-1605029103232-bc7cf0f3b3df?w=400'
+      picture_url: tonicWaterBottle
     },
     {
       id: '8', 
@@ -76,7 +85,7 @@ const ItemDetails = () => {
       category: 'mixers',
       description: 'Artisanal ginger beer with real ginger and agave. Spicy and refreshing, perfect for Moscow Mules, Dark & Stormys, and other ginger cocktails.',
       quantity: 2,
-      picture_url: 'https://images.unsplash.com/photo-1639317632997-4e1bfed3c294?w=400'
+      picture_url: gingerBeerBottle
     },
     {
       id: '9',
@@ -84,7 +93,7 @@ const ItemDetails = () => {
       category: 'mixers', 
       description: 'Classic cranberry juice cocktail with sweet-tart flavor. Essential for Cosmopolitans, Cape Codders, and adding color to mixed drinks.',
       quantity: 1,
-      picture_url: 'https://images.unsplash.com/photo-1582434142716-405ea16e8df8?w=400'
+      picture_url: cranberryJuiceBottle
     }
   ];
 

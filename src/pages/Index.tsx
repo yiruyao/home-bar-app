@@ -9,6 +9,15 @@ import { Toaster } from '@/components/ui/toaster';
 import { User, Grid3X3, Camera, Martini, Plus } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import cocktailShakerHero from '@/assets/cocktail-hero-updated.png';
+import whiskeyBottle from '@/assets/whiskey-bottle.png';
+import ginBottle from '@/assets/gin-bottle.png';
+import tequilaBottle from '@/assets/tequila-bottle.png';
+import orangeLiqueurBottle from '@/assets/orange-liqueur-bottle.png';
+import amarettoBottle from '@/assets/amaretto-bottle.png';
+import coffeeLiqueurBottle from '@/assets/coffee-liqueur-bottle.png';
+import tonicWaterBottle from '@/assets/tonic-water-bottle.png';
+import gingerBeerBottle from '@/assets/ginger-beer-bottle.png';
+import cranberryJuiceBottle from '@/assets/cranberry-juice-bottle.png';
 
 const Index = () => {
   console.log('Index component rendering');
@@ -32,7 +41,7 @@ const Index = () => {
       category: 'spirits',
       description: 'A 100-proof straight rye whiskey perfect for classic cocktails like Manhattans and Old Fashioneds.',
       quantity: 1,
-      picture_url: 'https://images.unsplash.com/photo-1569529465841-dfecdab7503b?w=400'
+      picture_url: whiskeyBottle
     },
     {
       id: '2', 
@@ -40,7 +49,7 @@ const Index = () => {
       category: 'spirits',
       description: 'A distinctive gin infused with cucumber and rose petals, offering a unique botanical profile.',
       quantity: 1,
-      picture_url: 'https://images.unsplash.com/photo-1544145945-f90425340c7e?w=400'
+      picture_url: ginBottle
     },
     {
       id: '3',
@@ -48,7 +57,7 @@ const Index = () => {
       category: 'spirits',
       description: 'A premium 100% blue agave tequila with bright, crisp flavor perfect for margaritas.',
       quantity: 1,
-      picture_url: 'https://images.unsplash.com/photo-1606467278097-3e6a3eaa4fb8?w=400'
+      picture_url: tequilaBottle
     },
     // Liqueurs
     {
@@ -57,7 +66,7 @@ const Index = () => {
       category: 'liqueurs', 
       description: 'Premium French orange liqueur made from sweet and bitter orange peels.',
       quantity: 1,
-      picture_url: 'https://images.unsplash.com/photo-1578912996078-305d92249aa6?w=400'
+      picture_url: orangeLiqueurBottle
     },
     {
       id: '5',
@@ -65,7 +74,7 @@ const Index = () => {
       category: 'liqueurs',
       description: 'Italian almond liqueur with a distinctive sweet almond flavor and smooth finish.',
       quantity: 1, 
-      picture_url: 'https://images.unsplash.com/photo-1541532713592-79a0317b6b9d?w=400'
+      picture_url: amarettoBottle
     },
     {
       id: '6',
@@ -73,7 +82,7 @@ const Index = () => {
       category: 'liqueurs',
       description: 'Rich Mexican coffee liqueur made with rum, sugar, and arabica coffee.',
       quantity: 1,
-      picture_url: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=400'
+      picture_url: coffeeLiqueurBottle
     },
     // Mixers
     {
@@ -82,7 +91,7 @@ const Index = () => {
       category: 'mixers',
       description: 'Premium tonic water made with natural quinine from the Congo.',
       quantity: 4,
-      picture_url: 'https://images.unsplash.com/photo-1605029103232-bc7cf0f3b3df?w=400'
+      picture_url: tonicWaterBottle
     },
     {
       id: '8', 
@@ -90,7 +99,7 @@ const Index = () => {
       category: 'mixers',
       description: 'Artisanal ginger beer with real ginger and agave. Perfect for Moscow Mules.',
       quantity: 2,
-      picture_url: 'https://images.unsplash.com/photo-1639317632997-4e1bfed3c294?w=400'
+      picture_url: gingerBeerBottle
     },
     {
       id: '9',
@@ -98,7 +107,7 @@ const Index = () => {
       category: 'mixers', 
       description: 'Classic cranberry juice cocktail with sweet-tart flavor.',
       quantity: 1,
-      picture_url: 'https://images.unsplash.com/photo-1582434142716-405ea16e8df8?w=400'
+      picture_url: cranberryJuiceBottle
     }
   ];
 
