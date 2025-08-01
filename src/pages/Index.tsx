@@ -24,6 +24,11 @@ const Index = () => {
   const { user, loading, signInWithProvider, signOut } = useAuth();
   const navigate = useNavigate();
   const [authLoading, setAuthLoading] = useState<'google' | 'apple' | null>(null);
+  const [items, setItems] = useState<any[]>([]);
+  const [itemsLoading, setItemsLoading] = useState(true);
+
+  // Mock user ID for database queries
+  const mockUserId = '12345678-1234-1234-1234-123456789012';
 
   // Mock test user data
   const testUser = {
@@ -111,8 +116,42 @@ const Index = () => {
     }
   ];
 
+  // Load items from database
+  useEffect(() => {
+    const loadItems = async () => {
+      // Set up mock authentication
+      await supabase.auth.setSession({
+        access_token: 'mock-access-token',
+        refresh_token: 'mock-refresh-token',
+        user: {
+          id: mockUserId,
+          email: 'yiru.yao@example.com',
+          user_metadata: { name: 'Yiru Yao' },
+          app_metadata: {},
+          aud: 'authenticated',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        }
+      } as any);
+
+      // Fetch items from database
+      const { data, error } = await supabase
+        .from('items')
+        .select('*')
+        .eq('user_id', mockUserId)
+        .order('created_at', { ascending: true });
+
+      if (data && !error) {
+        setItems(data);
+      }
+      setItemsLoading(false);
+    };
+
+    loadItems();
+  }, []);
+
   // Group items by category
-  const itemsByCategory = mockItems.reduce((acc, item) => {
+  const itemsByCategory = items.reduce((acc, item) => {
     if (!acc[item.category]) {
       acc[item.category] = [];
     }
@@ -183,7 +222,7 @@ const Index = () => {
             <div>
               <p className="text-gray-400 text-sm font-space-grotesk">Total Items</p>
               <p className="text-3xl font-bold font-space-grotesk">
-                {mockItems.length}
+                {itemsLoading ? '...' : items.length}
               </p>
             </div>
             <button 
@@ -195,33 +234,39 @@ const Index = () => {
           </div>
 
           {/* Items by Category */}
-          {Object.entries(itemsByCategory).map(([category, categoryItems]) => (
-            <div key={category} className="mb-8">
-              <h2 className="text-lg font-bold mb-4 font-space-grotesk capitalize">
-                {category}
-              </h2>
-              <div className="grid grid-cols-2 gap-4">
-                {(categoryItems as any[]).map((item: any) => (
-                  <div 
-                    key={item.id} 
-                    className="cursor-pointer hover:opacity-80 transition-opacity"
-                    onClick={() => navigate(`/item/${item.id}`)}
-                  >
-                    <div className="rounded-lg overflow-hidden aspect-square">
-                      <img 
-                        src={item.picture_url} 
-                        alt={item.name}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <p className="text-white font-normal font-space-grotesk text-sm mt-2 text-left">
-                      {item.name}
-                    </p>
-                  </div>
-                ))}
-              </div>
+          {itemsLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="w-8 h-8 border-4 border-white border-t-transparent rounded-full animate-spin" />
             </div>
-          ))}
+          ) : (
+            Object.entries(itemsByCategory).map(([category, categoryItems]) => (
+              <div key={category} className="mb-8">
+                <h2 className="text-lg font-bold mb-4 font-space-grotesk capitalize">
+                  {category}
+                </h2>
+                <div className="grid grid-cols-2 gap-4">
+                  {(categoryItems as any[]).map((item: any) => (
+                    <div 
+                      key={item.id} 
+                      className="cursor-pointer hover:opacity-80 transition-opacity"
+                      onClick={() => navigate(`/item/${item.id}`)}
+                    >
+                      <div className="rounded-lg overflow-hidden aspect-square">
+                        <img 
+                          src={item.picture_url} 
+                          alt={item.name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <p className="text-white font-normal font-space-grotesk text-sm mt-2 text-left">
+                        {item.name}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))
+          )}
         </div>
 
         {/* Bottom Navigation */}
