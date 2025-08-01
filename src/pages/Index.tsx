@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import cocktailShakerHero from '@/assets/cocktail-hero-updated.png';
 
 const Index = () => {
+  console.log('Index component rendering');
   const { user, loading, signInWithProvider, signOut } = useAuth();
   const navigate = useNavigate();
   const [authLoading, setAuthLoading] = useState<'google' | 'apple' | null>(null);
