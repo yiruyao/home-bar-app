@@ -24,6 +24,9 @@ const ItemDetails = () => {
   const [quantityChanged, setQuantityChanged] = useState(false);
   const [originalQuantity, setOriginalQuantity] = useState(1);
 
+  // Mock user ID (UUID format for database compatibility)
+  const mockUserId = '12345678-1234-1234-1234-123456789012';
+
   // Mock data as fallback for when database doesn't have the item
   const mockItems = [
     {
@@ -102,55 +105,98 @@ const ItemDetails = () => {
 
   const isAddingNewItem = location.pathname === '/add-item';
 
-  // Fetch item data on component mount
+  // Set up mock authentication and fetch item data
   useEffect(() => {
-    const fetchItem = async () => {
+    const setupMockAuthAndFetchItem = async () => {
       if (!id) {
         setLoading(false);
         return;
       }
 
+      // Mock authentication session
+      await supabase.auth.setSession({
+        access_token: 'mock-access-token',
+        refresh_token: 'mock-refresh-token',
+        user: {
+          id: mockUserId,
+          email: 'yiru.yao@example.com',
+          user_metadata: { name: 'Yiru Yao' },
+          app_metadata: {},
+          aud: 'authenticated',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        }
+      } as any);
+
       // Check if this is a mock item ID (simple numbers)
       const isMockId = /^\d+$/.test(id);
       
-      if (!isMockId) {
-        // Try to fetch from database for real UUIDs
-        try {
-          const { data, error } = await supabase
+      if (isMockId) {
+        // For mock items, try to find in database first, create if doesn't exist
+        const mockItem = mockItems.find(item => item.id === id);
+        if (!mockItem) {
+          setLoading(false);
+          return;
+        }
+
+        // Check if this item already exists in database
+        const { data: existingItem } = await supabase
+          .from('items')
+          .select('*')
+          .eq('user_id', mockUserId)
+          .eq('name', mockItem.name)
+          .maybeSingle();
+
+        if (existingItem) {
+          setItem(existingItem);
+          setQuantity(existingItem.quantity);
+          setOriginalQuantity(existingItem.quantity);
+        } else {
+          // Create the item in database
+          const { data: newItem, error } = await supabase
             .from('items')
-            .select('*')
-            .eq('id', id)
+            .insert({
+              name: mockItem.name,
+              category: mockItem.category as 'spirits' | 'liqueurs' | 'mixers' | 'bitters' | 'garnishes' | 'other',
+              description: mockItem.description || null,
+              quantity: mockItem.quantity,
+              user_id: mockUserId,
+              picture_url: mockItem.picture_url
+            })
+            .select()
             .single();
 
-          if (data && !error) {
-            setItem(data);
-            setQuantity(data.quantity);
-            setOriginalQuantity(data.quantity);
-            setLoading(false);
-            return;
+          if (newItem && !error) {
+            setItem(newItem);
+            setQuantity(newItem.quantity);
+            setOriginalQuantity(newItem.quantity);
+          } else {
+            // Fallback to mock data
+            setItem(mockItem);
+            setQuantity(mockItem.quantity);
+            setOriginalQuantity(mockItem.quantity);
           }
-        } catch (error) {
-          console.error('Error fetching item:', error);
         }
-      }
-      
-      // Fallback to mock data for simple IDs or when database fetch fails
-      const mockItem = mockItems.find(item => item.id === id);
-      if (mockItem) {
-        // Check if there's an updated quantity in localStorage
-        const savedQuantities = localStorage.getItem('mockItemQuantities');
-        const quantities = savedQuantities ? JSON.parse(savedQuantities) : {};
-        const savedQuantity = quantities[id] || mockItem.quantity;
-        
-        setItem({ ...mockItem, quantity: savedQuantity });
-        setQuantity(savedQuantity);
-        setOriginalQuantity(savedQuantity);
+      } else {
+        // For UUID items, fetch from database
+        const { data, error } = await supabase
+          .from('items')
+          .select('*')
+          .eq('id', id)
+          .eq('user_id', mockUserId)
+          .maybeSingle();
+
+        if (data && !error) {
+          setItem(data);
+          setQuantity(data.quantity);
+          setOriginalQuantity(data.quantity);
+        }
       }
       
       setLoading(false);
     };
 
-    fetchItem();
+    setupMockAuthAndFetchItem();
   }, [id]);
 
   const handleBack = () => {
@@ -165,31 +211,30 @@ const ItemDetails = () => {
 
   const handleAddToInventory = async () => {
     try {
-      // Check if this is a mock item ID (simple numbers)
-      const isMockId = /^\d+$/.test(id);
-      
-      if (isMockId && item) {
-        // For mock items, save to localStorage and show success
-        const savedQuantities = localStorage.getItem('mockItemQuantities');
-        const quantities = savedQuantities ? JSON.parse(savedQuantities) : {};
-        quantities[id] = quantity;
-        localStorage.setItem('mockItemQuantities', JSON.stringify(quantities));
-        
+      const { error } = await supabase
+        .from('items')
+        .update({ 
+          quantity: quantity,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', item.id);
+
+      if (error) {
+        console.error('Error updating quantity:', error);
         toast({
-          title: "Updated Inventory", 
-          description: `${item.name} quantity updated to ${quantity}.`,
+          title: "Error",
+          description: "Failed to update quantity. Please try again.",
+          variant: "destructive",
         });
-        setOriginalQuantity(quantity);
-        setQuantityChanged(false);
         return;
       }
 
-      // For real database items, would need proper authentication
       toast({
-        title: "Authentication Required",
-        description: "Please log in to update items in the database.",
-        variant: "destructive",
+        title: "Updated Inventory",
+        description: `${item?.name || 'Item'} quantity updated to ${quantity}.`,
       });
+      setOriginalQuantity(quantity);
+      setQuantityChanged(false);
     } catch (error) {
       console.error('Unexpected error:', error);
       toast({
@@ -202,7 +247,7 @@ const ItemDetails = () => {
 
   const handleEdit = () => {
     // Navigate to add-item page with current item data for editing
-    window.location.href = `/add-item?edit=${id}&name=${encodeURIComponent(item?.name || '')}&category=${item?.category || ''}&description=${encodeURIComponent(item?.description || '')}&quantity=${quantity}`;
+    window.location.href = `/add-item?edit=${item.id}&name=${encodeURIComponent(item?.name || '')}&category=${item?.category || ''}&description=${encodeURIComponent(item?.description || '')}&quantity=${quantity}`;
   };
 
   if (loading) {

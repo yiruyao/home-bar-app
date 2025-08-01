@@ -222,8 +222,23 @@ const AddItem = () => {
     }
 
     try {
-      // For preview purposes, create a mock user session
-      const mockUser = { id: 'mock-user-yiru-yao' };
+      // Mock user ID (UUID format for database compatibility)
+      const mockUserId = '12345678-1234-1234-1234-123456789012';
+      
+      // Set up mock authentication session
+      await supabase.auth.setSession({
+        access_token: 'mock-access-token',
+        refresh_token: 'mock-refresh-token',
+        user: {
+          id: mockUserId,
+          email: 'yiru.yao@example.com',
+          user_metadata: { name: 'Yiru Yao' },
+          app_metadata: {},
+          aud: 'authenticated',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        }
+      } as any);
       
       if (isEditing && editingItemId) {
         // Check if this is a mock item ID
@@ -238,7 +253,7 @@ const AddItem = () => {
               category: formData.category as CategoryType,
               description: formData.description.trim() || null,
               quantity: formData.quantity,
-              user_id: mockUser.id,
+              user_id: mockUserId,
               picture_url: imagePreview // Use the current image preview (could be original or new)
             })
             .select()
@@ -297,7 +312,7 @@ const AddItem = () => {
             category: formData.category as CategoryType,
             description: formData.description.trim() || null,
             quantity: formData.quantity,
-            user_id: mockUser.id,
+            user_id: mockUserId,
             picture_url: null // We'll handle image upload later
           })
           .select()
