@@ -189,7 +189,7 @@ const Index = () => {
           {Object.entries(itemsByCategory).map(([category, categoryItems]) => (
             <div key={category} className="mb-8">
               <h2 className="text-lg font-bold mb-4 font-space-grotesk capitalize">
-                {category} ({(categoryItems as any[]).length})
+                {category}
               </h2>
               <div className="grid grid-cols-2 gap-4">
                 {(categoryItems as any[]).map((item: any) => (
@@ -202,9 +202,6 @@ const Index = () => {
                     <div className="text-center">
                       <p className="text-black font-semibold font-space-grotesk text-sm">
                         {item.name}
-                      </p>
-                      <p className="text-black text-xs font-space-grotesk opacity-75">
-                        Qty: {item.quantity}
                       </p>
                     </div>
                   </div>
