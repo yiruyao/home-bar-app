@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Plus, Minus, Upload, X, Grid3X3, Camera, Martini } from 'lucide-react';
+import { ArrowLeft, Plus, Minus, Upload, X, Grid3X3, Camera, Martini, ChevronDown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from '@/hooks/use-toast';
 
 const AddItem = () => {
@@ -12,6 +13,7 @@ const AddItem = () => {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
+    category: '',
     quantity: 1,
     image: null as File | null
   });
@@ -49,21 +51,12 @@ const AddItem = () => {
   };
 
   const handleSave = () => {
-    if (!formData.title.trim()) {
-      toast({
-        title: "Error",
-        description: "Please enter an item title.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
     // TODO: Add item to database
     console.log('Adding item:', formData);
     
     toast({
       title: "Item Added",
-      description: `${formData.title} has been added to your inventory.`,
+      description: `${formData.title || 'Item'} has been added to your inventory.`,
     });
     
     navigate('/');
@@ -91,9 +84,26 @@ const AddItem = () => {
             id="title"
             value={formData.title}
             onChange={(e) => handleInputChange('title', e.target.value)}
-            placeholder="Enter item name"
             className="bg-gray-800 border-gray-700 text-white placeholder-gray-400 font-space-grotesk"
           />
+        </div>
+
+        {/* Category */}
+        <div className="space-y-2">
+          <Label className="text-white font-space-grotesk">Category</Label>
+          <Select value={formData.category} onValueChange={(value) => handleInputChange('category', value)}>
+            <SelectTrigger className="bg-gray-800 border-gray-700 text-white font-space-grotesk">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="bg-gray-800 border-gray-700 z-50">
+              <SelectItem value="spirits" className="text-white hover:bg-gray-700 focus:bg-gray-700">Spirits</SelectItem>
+              <SelectItem value="liqueurs" className="text-white hover:bg-gray-700 focus:bg-gray-700">Liqueurs</SelectItem>
+              <SelectItem value="mixers" className="text-white hover:bg-gray-700 focus:bg-gray-700">Mixers</SelectItem>
+              <SelectItem value="bitters" className="text-white hover:bg-gray-700 focus:bg-gray-700">Bitters</SelectItem>
+              <SelectItem value="garnishes" className="text-white hover:bg-gray-700 focus:bg-gray-700">Garnishes</SelectItem>
+              <SelectItem value="other" className="text-white hover:bg-gray-700 focus:bg-gray-700">Other</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Description */}
@@ -103,7 +113,6 @@ const AddItem = () => {
             id="description"
             value={formData.description}
             onChange={(e) => handleInputChange('description', e.target.value)}
-            placeholder="Enter description (optional)"
             rows={4}
             className="bg-gray-800 border-gray-700 text-white placeholder-gray-400 font-space-grotesk resize-none"
           />
@@ -136,7 +145,7 @@ const AddItem = () => {
 
         {/* Image Upload */}
         <div className="space-y-2">
-          <Label className="text-white font-space-grotesk">Picture (Optional)</Label>
+          <Label className="text-white font-space-grotesk">Picture</Label>
           <div className="space-y-3">
             {imagePreview ? (
               <div className="relative">
@@ -173,19 +182,11 @@ const AddItem = () => {
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex space-x-4 pt-6 pb-20">
-          <Button 
-            variant="outline"
-            onClick={handleBack}
-            className="flex-1 h-12 text-white border-gray-600 hover:bg-gray-800 font-space-grotesk"
-          >
-            Cancel
-          </Button>
+        {/* Action Button */}
+        <div className="pt-6 pb-20">
           <Button 
             onClick={handleSave}
-            disabled={!formData.title.trim()}
-            className="flex-1 h-12 bg-amber-600 hover:bg-amber-700 text-black font-space-grotesk font-bold disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full h-12 bg-amber-600 hover:bg-amber-700 text-black font-space-grotesk font-bold"
           >
             Add to Inventory
           </Button>
