@@ -158,14 +158,45 @@ const ItemDetails = () => {
     setQuantityChanged(newQuantity !== originalQuantity);
   };
 
-  const handleAddToInventory = () => {
-    toast({
-      title: "Updated Inventory",
-      description: `${item?.name || 'Item'} quantity updated to ${quantity}.`,
-    });
-    setOriginalQuantity(quantity);
-    setQuantityChanged(false);
-    window.location.href = '/';
+  const handleAddToInventory = async () => {
+    try {
+      // For preview purposes, use mock user
+      const mockUserId = 'mock-user-yiru-yao';
+      
+      // Update quantity in database
+      const { error } = await supabase
+        .from('items')
+        .update({ 
+          quantity: quantity,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', id)
+        .eq('user_id', mockUserId);
+
+      if (error) {
+        console.error('Error updating quantity:', error);
+        toast({
+          title: "Error",
+          description: "Failed to update quantity. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      toast({
+        title: "Updated Inventory",
+        description: `${item?.name || 'Item'} quantity updated to ${quantity}.`,
+      });
+      setOriginalQuantity(quantity);
+      setQuantityChanged(false);
+    } catch (error) {
+      console.error('Unexpected error:', error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleEdit = () => {

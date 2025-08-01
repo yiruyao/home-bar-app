@@ -19,17 +19,21 @@ const AddItem = () => {
     image: null as File | null
   });
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingItemId, setEditingItemId] = useState<string | null>(null);
 
   // Handle URL parameters for editing
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
-    const isEditing = urlParams.get('edit');
+    const editId = urlParams.get('edit');
     const name = urlParams.get('name');
     const category = urlParams.get('category');
     const description = urlParams.get('description');
     const quantity = urlParams.get('quantity');
 
-    if (isEditing && name) {
+    if (editId && name) {
+      setIsEditing(true);
+      setEditingItemId(editId);
       setFormData({
         title: decodeURIComponent(name),
         description: description ? decodeURIComponent(description) : '',
@@ -37,8 +41,27 @@ const AddItem = () => {
         quantity: quantity ? parseInt(quantity) : 1,
         image: null
       });
+      
+      // Fetch the item to get the picture URL
+      fetchItemForEdit(editId);
     }
   }, []);
+
+  const fetchItemForEdit = async (itemId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('items')
+        .select('picture_url')
+        .eq('id', itemId)
+        .single();
+
+      if (data && data.picture_url) {
+        setImagePreview(data.picture_url);
+      }
+    } catch (error) {
+      console.error('Error fetching item for edit:', error);
+    }
+  };
 
   const handleInputChange = (field: string, value: string | number) => {
     setFormData(prev => ({
@@ -101,46 +124,68 @@ const AddItem = () => {
     }
 
     try {
-      // Check if user is authenticated
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      // For preview purposes, create a mock user session
+      const mockUser = { id: 'mock-user-yiru-yao' };
       
-      if (authError || !user) {
+      if (isEditing && editingItemId) {
+        // Update existing item
+        const { data, error } = await supabase
+          .from('items')
+          .update({
+            name: formData.title.trim(),
+            category: formData.category as CategoryType,
+            description: formData.description.trim() || null,
+            quantity: formData.quantity,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', editingItemId)
+          .select()
+          .single();
+
+        if (error) {
+          console.error('Error updating item:', error);
+          toast({
+            title: "Error",
+            description: "Failed to update item. Please try again.",
+            variant: "destructive",
+          });
+          return;
+        }
+
         toast({
-          title: "Authentication Error",
-          description: "You must be logged in to add items.",
-          variant: "destructive",
+          title: "Item Updated",
+          description: `${formData.title} has been updated successfully.`,
         });
-        return;
-      }
+      } else {
+        // Insert new item
+        const { data, error } = await supabase
+          .from('items')
+          .insert({
+            name: formData.title.trim(),
+            category: formData.category as CategoryType,
+            description: formData.description.trim() || null,
+            quantity: formData.quantity,
+            user_id: mockUser.id,
+            picture_url: null // We'll handle image upload later
+          })
+          .select()
+          .single();
 
-      // Insert item into database
-      const { data, error } = await supabase
-        .from('items')
-        .insert({
-          name: formData.title.trim(),
-          category: formData.category as CategoryType,
-          description: formData.description.trim() || null,
-          quantity: formData.quantity,
-          user_id: user.id,
-          picture_url: null // We'll handle image upload later
-        })
-        .select()
-        .single();
+        if (error) {
+          console.error('Error adding item:', error);
+          toast({
+            title: "Error",
+            description: "Failed to add item to inventory. Please try again.",
+            variant: "destructive",
+          });
+          return;
+        }
 
-      if (error) {
-        console.error('Error adding item:', error);
         toast({
-          title: "Error",
-          description: "Failed to add item to inventory. Please try again.",
-          variant: "destructive",
+          title: "Item Added",
+          description: `${formData.title} has been added to your inventory.`,
         });
-        return;
       }
-
-      toast({
-        title: "Item Added",
-        description: `${formData.title} has been added to your inventory.`,
-      });
       
       window.location.href = '/';
     } catch (error) {
@@ -162,7 +207,7 @@ const AddItem = () => {
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-4 border-b border-gray-800">
         <ArrowLeft className="w-6 h-6 cursor-pointer" onClick={handleBack} />
-        <h1 className="text-xl font-bold font-space-grotesk">Add Item</h1>
+        <h1 className="text-xl font-bold font-space-grotesk">{isEditing ? 'Edit Item' : 'Add Item'}</h1>
         <div className="w-6 h-6" /> {/* Spacer for centering */}
       </div>
 
@@ -279,7 +324,7 @@ const AddItem = () => {
             onClick={handleSave}
             className="w-full h-12 bg-amber-600 hover:bg-amber-700 text-black font-space-grotesk font-bold"
           >
-            Add to Inventory
+            {isEditing ? 'Update Item' : 'Add to Inventory'}
           </Button>
         </div>
       </div>
