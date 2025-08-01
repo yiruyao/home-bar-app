@@ -53,8 +53,7 @@ const Profile = () => {
       <div className="px-6 pb-20">
         <Button 
           onClick={handleSignOut}
-          variant="outline"
-          className="w-full transition-all duration-300 hover:scale-105 border-gray-600 text-white hover:bg-gray-800 font-space-grotesk"
+          className="px-8 py-3 h-12 bg-amber-600 hover:bg-amber-700 text-black font-space-grotesk rounded-full border-0 mx-auto block"
         >
           Sign Out
         </Button>
