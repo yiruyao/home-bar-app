@@ -165,7 +165,7 @@ const ItemDetails = () => {
       
       if (isMockId && item) {
         // For mock items, create a new database entry and redirect to it
-        const mockUserId = 'mock-user-yiru-yao';
+        const mockUserId = '00000000-0000-0000-0000-000000000000';
         
         const { data, error } = await supabase
           .from('items')
@@ -201,7 +201,7 @@ const ItemDetails = () => {
       }
 
       // For real database items, update in database
-      const mockUserId = 'mock-user-yiru-yao';
+      const mockUserId = '00000000-0000-0000-0000-000000000000';
       
       const { error } = await supabase
         .from('items')
