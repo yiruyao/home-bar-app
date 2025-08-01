@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import AuthButton from '@/components/auth/AuthButton';
@@ -7,18 +7,84 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Toaster } from '@/components/ui/toaster';
 import { User, Grid3X3, Camera, Martini, Plus } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 import cocktailShakerHero from '@/assets/cocktail-hero-updated.png';
 
 const Index = () => {
   const { user, loading, signInWithProvider, signOut } = useAuth();
   const navigate = useNavigate();
   const [authLoading, setAuthLoading] = useState<'google' | 'apple' | null>(null);
+  const [items, setItems] = useState<any[]>([]);
+  const [itemsLoading, setItemsLoading] = useState(false);
 
   // Mock test user data
   const testUser = {
     first_name: 'Yiru',
     last_name: 'Yao',
     email: 'yiru82@gmail.com'
+  };
+
+  // Fetch user's items
+  const fetchItems = async () => {
+    setItemsLoading(true);
+    try {
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      if (currentUser) {
+        const { data, error } = await supabase
+          .from('items')
+          .select('*')
+          .eq('user_id', currentUser.id)
+          .order('created_at', { ascending: false });
+        
+        if (!error && data) {
+          setItems(data);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching items:', error);
+    }
+    setItemsLoading(false);
+  };
+
+  useEffect(() => {
+    if (user) {
+      fetchItems();
+    }
+  }, [user]);
+
+  // Group items by category
+  const itemsByCategory = items.reduce((acc, item) => {
+    if (!acc[item.category]) {
+      acc[item.category] = [];
+    }
+    acc[item.category].push(item);
+    return acc;
+  }, {} as Record<string, any[]>);
+
+  // Get emoji for category
+  const getCategoryEmoji = (category: string) => {
+    const emojiMap: Record<string, string> = {
+      spirits: '🥃',
+      liqueurs: '🍷',
+      mixers: '🥤',
+      bitters: '🧪',
+      garnishes: '🍋',
+      other: '📦'
+    };
+    return emojiMap[category] || '📦';
+  };
+
+  // Get background color for category
+  const getCategoryColor = (category: string) => {
+    const colorMap: Record<string, string> = {
+      spirits: 'bg-amber-100',
+      liqueurs: 'bg-pink-200',
+      mixers: 'bg-blue-100',
+      bitters: 'bg-purple-200',
+      garnishes: 'bg-green-200',
+      other: 'bg-gray-200'
+    };
+    return colorMap[category] || 'bg-gray-200';
   };
 
   const handleAuth = async (provider: 'google' | 'apple') => {
@@ -57,7 +123,9 @@ const Index = () => {
           <div className="bg-gray-800 rounded-lg p-4 mb-6 flex items-center justify-between">
             <div>
               <p className="text-gray-400 text-sm font-space-grotesk">Total Items</p>
-              <p className="text-3xl font-bold font-space-grotesk">18</p>
+              <p className="text-3xl font-bold font-space-grotesk">
+                {itemsLoading ? '...' : items.length}
+              </p>
             </div>
             <button 
               onClick={() => navigate('/add-item')}
@@ -67,74 +135,52 @@ const Index = () => {
             </button>
           </div>
 
-          {/* Spirits Section */}
-          <div className="mb-8">
-            <h2 className="text-lg font-bold mb-4 font-space-grotesk">Spirits</h2>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-amber-100 rounded-lg p-4 aspect-square flex flex-col items-center justify-between">
-                <div className="text-6xl">🥃</div>
-                <p className="text-black font-semibold font-space-grotesk">Whiskey</p>
-              </div>
-              <div className="bg-pink-100 rounded-lg p-4 aspect-square flex flex-col items-center justify-between">
-                <div className="text-6xl">🍸</div>
-                <p className="text-black font-semibold font-space-grotesk">Vodka</p>
-              </div>
-              <div className="bg-amber-200 rounded-lg p-4 aspect-square flex flex-col items-center justify-between">
-                <div className="text-6xl">🥃</div>
-                <p className="text-black font-semibold font-space-grotesk">Rum</p>
-              </div>
-              <div className="bg-green-100 rounded-lg p-4 aspect-square flex flex-col items-center justify-between">
-                <div className="text-6xl">🍸</div>
-                <p className="text-black font-semibold font-space-grotesk">Gin</p>
-              </div>
+          {/* Items by Category */}
+          {itemsLoading ? (
+            <div className="text-center py-8">
+              <div className="w-8 h-8 border-4 border-white border-t-transparent rounded-full animate-spin mx-auto" />
+              <p className="text-gray-400 mt-2 font-space-grotesk">Loading items...</p>
             </div>
-          </div>
-
-          {/* Liqueurs Section */}
-          <div className="mb-8">
-            <h2 className="text-lg font-bold mb-4 font-space-grotesk">Liqueurs</h2>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-pink-200 rounded-lg p-4 aspect-square flex flex-col items-center justify-between">
-                <div className="text-6xl">🍷</div>
-                <p className="text-black font-semibold font-space-grotesk">Triple Sec</p>
+          ) : (
+            Object.keys(itemsByCategory).length > 0 ? (
+              Object.entries(itemsByCategory).map(([category, categoryItems]) => (
+                <div key={category} className="mb-8">
+                  <h2 className="text-lg font-bold mb-4 font-space-grotesk capitalize">
+                    {category} ({(categoryItems as any[]).length})
+                  </h2>
+                  <div className="grid grid-cols-2 gap-4">
+                    {(categoryItems as any[]).map((item: any) => (
+                      <div 
+                        key={item.id} 
+                        className={`${getCategoryColor(category)} rounded-lg p-4 aspect-square flex flex-col items-center justify-between cursor-pointer hover:opacity-80 transition-opacity`}
+                        onClick={() => navigate(`/item/${item.id}`)}
+                      >
+                        <div className="text-6xl">{getCategoryEmoji(category)}</div>
+                        <div className="text-center">
+                          <p className="text-black font-semibold font-space-grotesk text-sm">
+                            {item.name}
+                          </p>
+                          <p className="text-black text-xs font-space-grotesk opacity-75">
+                            Qty: {item.quantity}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-gray-400 font-space-grotesk mb-4">No items in your inventory yet</p>
+                <Button 
+                  onClick={() => navigate('/add-item')}
+                  className="bg-amber-600 hover:bg-amber-700 text-black font-space-grotesk"
+                >
+                  Add Your First Item
+                </Button>
               </div>
-              <div className="bg-orange-200 rounded-lg p-4 aspect-square flex flex-col items-center justify-between">
-                <div className="text-6xl">🍷</div>
-                <p className="text-black font-semibold font-space-grotesk">Amaretto</p>
-              </div>
-              <div className="bg-red-200 rounded-lg p-4 aspect-square flex flex-col items-center justify-between">
-                <div className="text-6xl">🍷</div>
-                <p className="text-black font-semibold font-space-grotesk">Campari</p>
-              </div>
-              <div className="bg-yellow-200 rounded-lg p-4 aspect-square flex flex-col items-center justify-between">
-                <div className="text-6xl">🍷</div>
-                <p className="text-black font-semibold font-space-grotesk">Aperol</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Mixers Section */}
-          <div className="mb-8">
-            <h2 className="text-lg font-bold mb-4 font-space-grotesk">Mixers</h2>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-blue-100 rounded-lg p-4 aspect-square flex flex-col items-center justify-between">
-                <div className="text-6xl">🥤</div>
-                <p className="text-black font-semibold font-space-grotesk">Tonic Water</p>
-              </div>
-              <div className="bg-green-200 rounded-lg p-4 aspect-square flex flex-col items-center justify-between">
-                <div className="text-6xl">🥤</div>
-                <p className="text-black font-semibold font-space-grotesk">Club Soda</p>
-              </div>
-              <div className="bg-yellow-300 rounded-lg p-4 aspect-square flex flex-col items-center justify-between">
-                <div className="text-6xl">🥤</div>
-                <p className="text-black font-semibold font-space-grotesk">Ginger Ale</p>
-              </div>
-              <div className="bg-red-300 rounded-lg p-4 aspect-square flex flex-col items-center justify-between">
-                <div className="text-6xl">🧃</div>
-                <p className="text-black font-semibold font-space-grotesk">Cranberry Juice</p>
-              </div>
-            </div>
-          </div>
+            )
+          )}
 
           {/* Sign Out Button */}
           <div className="mt-8 text-center">
