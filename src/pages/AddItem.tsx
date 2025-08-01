@@ -7,6 +7,15 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import whiskeyBottle from '@/assets/whiskey-bottle.png';
+import ginBottle from '@/assets/gin-bottle.png';
+import tequilaBottle from '@/assets/tequila-bottle.png';
+import orangeLiqueurBottle from '@/assets/orange-liqueur-bottle.png';
+import amarettoBottle from '@/assets/amaretto-bottle.png';
+import coffeeLiqueurBottle from '@/assets/coffee-liqueur-bottle.png';
+import tonicWaterBottle from '@/assets/tonic-water-bottle.png';
+import gingerBeerBottle from '@/assets/ginger-beer-bottle.png';
+import cranberryJuiceBottle from '@/assets/cranberry-juice-bottle.png';
 
 type CategoryType = 'spirits' | 'liqueurs' | 'mixers' | 'bitters' | 'garnishes' | 'other';
 
@@ -21,6 +30,82 @@ const AddItem = () => {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
+
+  // Mock data for fallback when editing mock items
+  const mockItems = [
+    {
+      id: '1',
+      name: 'Rittenhouse Rye Whiskey',
+      category: 'spirits',
+      description: 'A 100-proof straight rye whiskey perfect for classic cocktails like Manhattans and Old Fashioneds. Known for its spicy character and ability to cut through citrus and bitters.',
+      quantity: 1,
+      picture_url: whiskeyBottle
+    },
+    {
+      id: '2', 
+      name: "Hendrick's Gin",
+      category: 'spirits',
+      description: 'A distinctive gin infused with cucumber and rose petals, offering a unique botanical profile that works beautifully in gin and tonics or martinis.',
+      quantity: 1,
+      picture_url: ginBottle
+    },
+    {
+      id: '3',
+      name: 'Espolòn Tequila Blanco', 
+      category: 'spirits',
+      description: 'A premium 100% blue agave tequila with bright, crisp flavor perfect for margaritas and other agave-based cocktails. Clean finish with hints of pepper and citrus.',
+      quantity: 1,
+      picture_url: tequilaBottle
+    },
+    {
+      id: '4',
+      name: 'Cointreau Triple Sec',
+      category: 'liqueurs', 
+      description: 'Premium French orange liqueur made from sweet and bitter orange peels. Essential for classics like Margaritas, Cosmopolitans, and Sidecars.',
+      quantity: 1,
+      picture_url: orangeLiqueurBottle
+    },
+    {
+      id: '5',
+      name: 'Disaronno Amaretto',
+      category: 'liqueurs',
+      description: 'Italian almond liqueur with a distinctive sweet almond flavor and smooth finish. Perfect for Amaretto Sours or as a dessert drink ingredient.',
+      quantity: 1, 
+      picture_url: amarettoBottle
+    },
+    {
+      id: '6',
+      name: 'Kahlúa Coffee Liqueur',
+      category: 'liqueurs',
+      description: 'Rich Mexican coffee liqueur made with rum, sugar, and arabica coffee. Essential for White Russians, Espresso Martinis, and Mudslides.',
+      quantity: 1,
+      picture_url: coffeeLiqueurBottle
+    },
+    {
+      id: '7',
+      name: 'Fever-Tree Tonic Water',
+      category: 'mixers',
+      description: 'Premium tonic water made with natural quinine from the Congo. Provides the perfect bitter balance for gin and tonics with its crisp, clean taste.',
+      quantity: 4,
+      picture_url: tonicWaterBottle
+    },
+    {
+      id: '8', 
+      name: 'Q Ginger Beer',
+      category: 'mixers',
+      description: 'Artisanal ginger beer with real ginger and agave. Spicy and refreshing, perfect for Moscow Mules, Dark & Stormys, and other ginger cocktails.',
+      quantity: 2,
+      picture_url: gingerBeerBottle
+    },
+    {
+      id: '9',
+      name: 'Ocean Spray Cranberry Juice',
+      category: 'mixers', 
+      description: 'Classic cranberry juice cocktail with sweet-tart flavor. Essential for Cosmopolitans, Cape Codders, and adding color to mixed drinks.',
+      quantity: 1,
+      picture_url: cranberryJuiceBottle
+    }
+  ];
 
   // Handle URL parameters for editing
   useEffect(() => {
@@ -49,6 +134,19 @@ const AddItem = () => {
 
   const fetchItemForEdit = async (itemId: string) => {
     try {
+      // Check if this is a mock item ID (simple numbers)
+      const isMockId = /^\d+$/.test(itemId);
+      
+      if (isMockId) {
+        // For mock items, get the picture from mock data
+        const mockItem = mockItems.find(item => item.id === itemId);
+        if (mockItem && mockItem.picture_url) {
+          setImagePreview(mockItem.picture_url);
+        }
+        return;
+      }
+
+      // For real database items, fetch from database
       const { data, error } = await supabase
         .from('items')
         .select('picture_url')

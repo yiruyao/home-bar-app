@@ -110,36 +110,36 @@ const ItemDetails = () => {
         return;
       }
 
-      try {
-        // Try to fetch from database first
-        const { data, error } = await supabase
-          .from('items')
-          .select('*')
-          .eq('id', id)
-          .single();
+      // Check if this is a mock item ID (simple numbers)
+      const isMockId = /^\d+$/.test(id);
+      
+      if (!isMockId) {
+        // Try to fetch from database for real UUIDs
+        try {
+          const { data, error } = await supabase
+            .from('items')
+            .select('*')
+            .eq('id', id)
+            .single();
 
-        if (data && !error) {
-          setItem(data);
-          setQuantity(data.quantity);
-          setOriginalQuantity(data.quantity);
-        } else {
-          // Fallback to mock data
-          const mockItem = mockItems.find(item => item.id === id);
-          if (mockItem) {
-            setItem(mockItem);
-            setQuantity(mockItem.quantity);
-            setOriginalQuantity(mockItem.quantity);
+          if (data && !error) {
+            setItem(data);
+            setQuantity(data.quantity);
+            setOriginalQuantity(data.quantity);
+            setLoading(false);
+            return;
           }
+        } catch (error) {
+          console.error('Error fetching item:', error);
         }
-      } catch (error) {
-        console.error('Error fetching item:', error);
-        // Fallback to mock data
-        const mockItem = mockItems.find(item => item.id === id);
-        if (mockItem) {
-          setItem(mockItem);
-          setQuantity(mockItem.quantity);
-          setOriginalQuantity(mockItem.quantity);
-        }
+      }
+      
+      // Fallback to mock data for simple IDs or when database fetch fails
+      const mockItem = mockItems.find(item => item.id === id);
+      if (mockItem) {
+        setItem(mockItem);
+        setQuantity(mockItem.quantity);
+        setOriginalQuantity(mockItem.quantity);
       }
       
       setLoading(false);
@@ -160,7 +160,21 @@ const ItemDetails = () => {
 
   const handleAddToInventory = async () => {
     try {
-      // For preview purposes, use mock user
+      // Check if this is a mock item ID (simple numbers)
+      const isMockId = /^\d+$/.test(id);
+      
+      if (isMockId) {
+        // For mock items, just show success message without database update
+        toast({
+          title: "Updated Inventory",
+          description: `${item?.name || 'Item'} quantity updated to ${quantity}.`,
+        });
+        setOriginalQuantity(quantity);
+        setQuantityChanged(false);
+        return;
+      }
+
+      // For real database items, update in database
       const mockUserId = 'mock-user-yiru-yao';
       
       // Update quantity in database
