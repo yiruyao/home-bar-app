@@ -228,7 +228,7 @@ const ItemDetails = () => {
 
         {/* Quantity Section */}
         <div className="mt-8 mb-8">
-          <div className="flex items-center justify-between bg-gray-800 rounded-lg p-4">
+          <div className="flex items-center justify-between p-4">
             <span className="text-gray-300 font-space-grotesk">1 bottle</span>
             <div className="flex items-center space-x-3">
               <button 
@@ -253,9 +253,9 @@ const ItemDetails = () => {
         {/* Action Buttons */}
         <div className="flex space-x-3 pb-20">
           <Button 
-            variant="outline"
+            variant="ghost"
             onClick={handleEdit}
-            className="px-8 py-3 h-12 text-white border-gray-600 bg-gray-700 hover:bg-gray-600 font-space-grotesk rounded-full"
+            className="px-8 py-3 h-12 text-white bg-gray-700 hover:bg-gray-600 font-space-grotesk rounded-full border-0"
           >
             Edit
           </Button>
