@@ -238,7 +238,7 @@ const ItemDetails = () => {
 
         {/* Quantity Section */}
         <div className="mt-8 mb-8">
-          <div className="flex items-center justify-between p-4">
+          <div className="flex items-center justify-between">
             <span className="text-gray-300 font-space-grotesk text-left">
               {quantity} {quantity === 1 ? 'bottle' : 'bottles'}
             </span>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Plus, Minus, Upload, X, Grid3X3, Camera, Martini, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,6 +19,26 @@ const AddItem = () => {
     image: null as File | null
   });
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+  // Handle URL parameters for editing
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const isEditing = urlParams.get('edit');
+    const name = urlParams.get('name');
+    const category = urlParams.get('category');
+    const description = urlParams.get('description');
+    const quantity = urlParams.get('quantity');
+
+    if (isEditing && name) {
+      setFormData({
+        title: decodeURIComponent(name),
+        description: description ? decodeURIComponent(description) : '',
+        category: category as CategoryType || '',
+        quantity: quantity ? parseInt(quantity) : 1,
+        image: null
+      });
+    }
+  }, []);
 
   const handleInputChange = (field: string, value: string | number) => {
     setFormData(prev => ({
