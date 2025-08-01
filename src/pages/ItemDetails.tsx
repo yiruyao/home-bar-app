@@ -28,87 +28,11 @@ const ItemDetails = () => {
   // Mock user ID (UUID format for database compatibility)
   const mockUserId = '12345678-1234-1234-1234-123456789012';
 
-  // Mock data as fallback for when database doesn't have the item
-  const mockItems = [
-    {
-      id: '1',
-      name: 'Rittenhouse Rye Whiskey',
-      category: 'spirits',
-      description: 'A 100-proof straight rye whiskey perfect for classic cocktails like Manhattans and Old Fashioneds. Known for its spicy character and ability to cut through citrus and bitters.',
-      quantity: 1,
-      picture_url: whiskeyBottle
-    },
-    {
-      id: '2', 
-      name: "Hendrick's Gin",
-      category: 'spirits',
-      description: 'A distinctive gin infused with cucumber and rose petals, offering a unique botanical profile that works beautifully in gin and tonics or martinis.',
-      quantity: 1,
-      picture_url: ginBottle
-    },
-    {
-      id: '3',
-      name: 'Espolòn Tequila Blanco', 
-      category: 'spirits',
-      description: 'A premium 100% blue agave tequila with bright, crisp flavor perfect for margaritas and other agave-based cocktails. Clean finish with hints of pepper and citrus.',
-      quantity: 1,
-      picture_url: tequilaBottle
-    },
-    {
-      id: '4',
-      name: 'Cointreau Triple Sec',
-      category: 'liqueurs', 
-      description: 'Premium French orange liqueur made from sweet and bitter orange peels. Essential for classics like Margaritas, Cosmopolitans, and Sidecars.',
-      quantity: 1,
-      picture_url: orangeLiqueurBottle
-    },
-    {
-      id: '5',
-      name: 'Disaronno Amaretto',
-      category: 'liqueurs',
-      description: 'Italian almond liqueur with a distinctive sweet almond flavor and smooth finish. Perfect for Amaretto Sours or as a dessert drink ingredient.',
-      quantity: 1, 
-      picture_url: amarettoBottle
-    },
-    {
-      id: '6',
-      name: 'Kahlúa Coffee Liqueur',
-      category: 'liqueurs',
-      description: 'Rich Mexican coffee liqueur made with rum, sugar, and arabica coffee. Essential for White Russians, Espresso Martinis, and Mudslides.',
-      quantity: 1,
-      picture_url: coffeeLiqueurBottle
-    },
-    {
-      id: '7',
-      name: 'Fever-Tree Tonic Water',
-      category: 'mixers',
-      description: 'Premium tonic water made with natural quinine from the Congo. Provides the perfect bitter balance for gin and tonics with its crisp, clean taste.',
-      quantity: 4,
-      picture_url: tonicWaterBottle
-    },
-    {
-      id: '8', 
-      name: 'Q Ginger Beer',
-      category: 'mixers',
-      description: 'Artisanal ginger beer with real ginger and agave. Spicy and refreshing, perfect for Moscow Mules, Dark & Stormys, and other ginger cocktails.',
-      quantity: 2,
-      picture_url: gingerBeerBottle
-    },
-    {
-      id: '9',
-      name: 'Ocean Spray Cranberry Juice',
-      category: 'mixers', 
-      description: 'Classic cranberry juice cocktail with sweet-tart flavor. Essential for Cosmopolitans, Cape Codders, and adding color to mixed drinks.',
-      quantity: 1,
-      picture_url: cranberryJuiceBottle
-    }
-  ];
-
   const isAddingNewItem = location.pathname === '/add-item';
 
   // Set up mock authentication and fetch item data
   useEffect(() => {
-    const setupMockAuthAndFetchItem = async () => {
+    const setupAuthAndFetchItem = async () => {
       if (!id) {
         setLoading(false);
         return;
@@ -129,77 +53,24 @@ const ItemDetails = () => {
         }
       } as any);
 
-      // Check if this is a mock item ID (simple numbers)
-      const isMockId = /^\d+$/.test(id);
-      
-      if (isMockId) {
-        // For mock items, try to find in database first, create if doesn't exist
-        const mockItem = mockItems.find(item => item.id === id);
-        if (!mockItem) {
-          setLoading(false);
-          return;
-        }
+      // Fetch item from database
+      const { data, error } = await supabase
+        .from('items')
+        .select('*')
+        .eq('id', id)
+        .eq('user_id', mockUserId)
+        .maybeSingle();
 
-        // Check if this item already exists in database
-        const { data: existingItem } = await supabase
-          .from('items')
-          .select('*')
-          .eq('user_id', mockUserId)
-          .eq('name', mockItem.name)
-          .maybeSingle();
-
-        if (existingItem) {
-          setItem(existingItem);
-          setQuantity(existingItem.quantity);
-          setOriginalQuantity(existingItem.quantity);
-        } else {
-          // Create the item in database
-          const { data: newItem, error } = await supabase
-            .from('items')
-            .insert({
-              name: mockItem.name,
-              category: mockItem.category as 'spirits' | 'liqueurs' | 'mixers' | 'bitters' | 'garnishes' | 'other',
-              description: mockItem.description || null,
-              quantity: mockItem.quantity,
-              user_id: mockUserId,
-              picture_url: mockItem.picture_url
-            })
-            .select()
-            .single();
-
-          if (newItem && !error) {
-            setItem(newItem);
-            setQuantity(newItem.quantity);
-            setOriginalQuantity(newItem.quantity);
-            // Update the URL to use the database ID
-            window.history.replaceState(null, '', `/item/${newItem.id}`);
-          } else {
-            // Fallback to mock data
-            setItem(mockItem);
-            setQuantity(mockItem.quantity);
-            setOriginalQuantity(mockItem.quantity);
-          }
-        }
-      } else {
-        // For UUID items, fetch from database
-        const { data, error } = await supabase
-          .from('items')
-          .select('*')
-          .eq('id', id)
-          .eq('user_id', mockUserId)
-          .maybeSingle();
-
-        if (data && !error) {
-          setItem(data);
-          setQuantity(data.quantity);
-          setOriginalQuantity(data.quantity);
-        }
+      if (data && !error) {
+        setItem(data);
+        setQuantity(data.quantity);
+        setOriginalQuantity(data.quantity);
       }
       
       setLoading(false);
     };
 
-    setupMockAuthAndFetchItem();
+    setupAuthAndFetchItem();
   }, [id]);
 
   const handleBack = () => {
@@ -214,50 +85,7 @@ const ItemDetails = () => {
 
   const handleAddToInventory = async () => {
     try {
-      // Check if this item doesn't have a database ID yet (still using mock ID)
-      const isMockId = /^\d+$/.test(item.id.toString());
-      
-      if (isMockId) {
-        // Convert mock item to database item first
-        const { data: newItem, error } = await supabase
-          .from('items')
-          .insert({
-            name: item.name,
-            category: item.category as 'spirits' | 'liqueurs' | 'mixers' | 'bitters' | 'garnishes' | 'other',
-            description: item.description || null,
-            quantity: quantity,
-            user_id: mockUserId,
-            picture_url: item.picture_url
-          })
-          .select()
-          .single();
-
-        if (error) {
-          console.error('Error creating database item:', error);
-          toast({
-            title: "Error",
-            description: "Failed to update quantity. Please try again.",
-            variant: "destructive",
-          });
-          return;
-        }
-
-        // Update component state with new database item
-        setItem(newItem);
-        setOriginalQuantity(quantity);
-        setQuantityChanged(false);
-        
-        // Update URL to use database ID
-        window.history.replaceState(null, '', `/item/${newItem.id}`);
-        
-        toast({
-          title: "Updated Inventory",
-          description: `${item.name} quantity updated to ${quantity}.`,
-        });
-        return;
-      }
-
-      // For existing database items, update directly
+      // Update item quantity in database
       const { error } = await supabase
         .from('items')
         .update({ 
