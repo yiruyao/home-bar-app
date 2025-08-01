@@ -6,12 +6,15 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+
+type CategoryType = 'spirits' | 'liqueurs' | 'mixers' | 'bitters' | 'garnishes' | 'other';
 
 const AddItem = () => {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    category: '',
+    category: '' as CategoryType | '',
     quantity: 1,
     image: null as File | null
   });
@@ -48,16 +51,86 @@ const AddItem = () => {
     }
   };
 
-  const handleSave = () => {
-    // TODO: Add item to database
-    console.log('Adding item:', formData);
-    
-    toast({
-      title: "Item Added",
-      description: `${formData.title || 'Item'} has been added to your inventory.`,
-    });
-    
-    window.location.href = '/';
+  const handleSave = async () => {
+    // Validation
+    if (!formData.title.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "Title is required.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!formData.category) {
+      toast({
+        title: "Validation Error", 
+        description: "Category is required.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (formData.quantity < 1) {
+      toast({
+        title: "Validation Error",
+        description: "Quantity must be at least 1.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      // Check if user is authenticated
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      
+      if (authError || !user) {
+        toast({
+          title: "Authentication Error",
+          description: "You must be logged in to add items.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Insert item into database
+      const { data, error } = await supabase
+        .from('items')
+        .insert({
+          name: formData.title.trim(),
+          category: formData.category as CategoryType,
+          description: formData.description.trim() || null,
+          quantity: formData.quantity,
+          user_id: user.id,
+          picture_url: null // We'll handle image upload later
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error adding item:', error);
+        toast({
+          title: "Error",
+          description: "Failed to add item to inventory. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      toast({
+        title: "Item Added",
+        description: `${formData.title} has been added to your inventory.`,
+      });
+      
+      window.location.href = '/';
+    } catch (error) {
+      console.error('Unexpected error:', error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleBack = () => {
