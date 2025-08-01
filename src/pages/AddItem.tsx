@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { ArrowLeft, Plus, Minus, Upload, X, Grid3X3, Camera, Martini, ChevronDown } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -9,7 +8,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from '@/hooks/use-toast';
 
 const AddItem = () => {
-  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -59,11 +57,11 @@ const AddItem = () => {
       description: `${formData.title || 'Item'} has been added to your inventory.`,
     });
     
-    navigate('/');
+    window.location.href = '/';
   };
 
   const handleBack = () => {
-    navigate('/');
+    window.history.back();
   };
 
   return (
@@ -196,7 +194,7 @@ const AddItem = () => {
       {/* Bottom Navigation */}
       <div className="fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-800">
         <div className="flex justify-around items-center py-3">
-          <div className="flex flex-col items-center cursor-pointer" onClick={() => navigate('/')}>
+          <div className="flex flex-col items-center cursor-pointer" onClick={() => window.location.href = '/'}>
             <Grid3X3 className="w-6 h-6 mb-1 text-white" />
             <span className="text-xs font-space-grotesk text-white">Inventory</span>
           </div>

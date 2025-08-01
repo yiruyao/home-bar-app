@@ -1,12 +1,9 @@
 import React from 'react';
 import { ArrowLeft, Grid3X3, Camera, Martini } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 
 const Profile = () => {
-  const navigate = useNavigate();
-
   const handleBack = () => {
-    navigate('/');
+    window.history.back();
   };
 
   return (
@@ -37,7 +34,7 @@ const Profile = () => {
       {/* Bottom Navigation */}
       <div className="fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-800">
         <div className="flex justify-around items-center py-3">
-          <div className="flex flex-col items-center cursor-pointer" onClick={() => navigate('/')}>
+          <div className="flex flex-col items-center cursor-pointer" onClick={() => window.location.href = '/'}>
             <Grid3X3 className="w-6 h-6 mb-1 text-gray-400" />
             <span className="text-xs font-space-grotesk text-gray-400">Inventory</span>
           </div>
