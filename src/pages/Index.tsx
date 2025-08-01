@@ -3,9 +3,11 @@ import React, { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import AuthButton from '@/components/auth/AuthButton';
+import AddItemForm from '@/components/AddItemForm';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Toaster } from '@/components/ui/toaster';
+import { toast } from '@/hooks/use-toast';
 import { User, Grid3X3, Camera, Martini, Plus } from 'lucide-react';
 import cocktailShakerHero from '@/assets/cocktail-hero-updated.png';
 
@@ -13,12 +15,24 @@ const Index = () => {
   const { user, loading, signInWithProvider, signOut } = useAuth();
   const navigate = useNavigate();
   const [authLoading, setAuthLoading] = useState<'google' | 'apple' | null>(null);
+  const [showAddItemForm, setShowAddItemForm] = useState(false);
+  const [totalItems, setTotalItems] = useState(18);
 
   // Mock test user data
   const testUser = {
     first_name: 'Yiru',
     last_name: 'Yao',
     email: 'yiru82@gmail.com'
+  };
+
+  const handleAddItem = (itemData: any) => {
+    // TODO: Add item to database
+    console.log('Adding item:', itemData);
+    setTotalItems(prev => prev + itemData.quantity);
+    toast({
+      title: "Item Added",
+      description: `${itemData.title} has been added to your inventory.`,
+    });
   };
 
   const handleAuth = async (provider: 'google' | 'apple') => {
@@ -57,10 +71,10 @@ const Index = () => {
           <div className="bg-gray-800 rounded-lg p-4 mb-6 flex items-center justify-between">
             <div>
               <p className="text-gray-400 text-sm font-space-grotesk">Total Items</p>
-              <p className="text-3xl font-bold font-space-grotesk">18</p>
+              <p className="text-3xl font-bold font-space-grotesk">{totalItems}</p>
             </div>
             <button 
-              onClick={() => navigate('/add-item')}
+              onClick={() => setShowAddItemForm(true)}
               className="w-10 h-10 bg-amber-600 rounded-full flex items-center justify-center hover:bg-amber-700 transition-colors"
             >
               <Plus className="w-5 h-5 text-black" />
@@ -165,6 +179,14 @@ const Index = () => {
             </div>
           </div>
         </div>
+        
+        {/* Add Item Form Modal */}
+        <AddItemForm 
+          isOpen={showAddItemForm}
+          onClose={() => setShowAddItemForm(false)}
+          onSave={handleAddItem}
+        />
+        
         <Toaster />
       </div>
     );
