@@ -91,15 +91,15 @@ const AddItem = () => {
           <Label className="text-white font-space-grotesk">Category</Label>
           <Select value={formData.category} onValueChange={(value) => handleInputChange('category', value)}>
             <SelectTrigger className="bg-gray-800 border-gray-700 text-white font-space-grotesk">
-              <SelectValue />
+              <SelectValue className="text-white" />
             </SelectTrigger>
             <SelectContent className="bg-gray-800 border-gray-700 z-50">
-              <SelectItem value="spirits" className="text-white hover:bg-gray-700 focus:bg-gray-700">Spirits</SelectItem>
-              <SelectItem value="liqueurs" className="text-white hover:bg-gray-700 focus:bg-gray-700">Liqueurs</SelectItem>
-              <SelectItem value="mixers" className="text-white hover:bg-gray-700 focus:bg-gray-700">Mixers</SelectItem>
-              <SelectItem value="bitters" className="text-white hover:bg-gray-700 focus:bg-gray-700">Bitters</SelectItem>
-              <SelectItem value="garnishes" className="text-white hover:bg-gray-700 focus:bg-gray-700">Garnishes</SelectItem>
-              <SelectItem value="other" className="text-white hover:bg-gray-700 focus:bg-gray-700">Other</SelectItem>
+              <SelectItem value="spirits" className="text-white hover:bg-gray-700 focus:bg-gray-700 focus:text-white">Spirits</SelectItem>
+              <SelectItem value="liqueurs" className="text-white hover:bg-gray-700 focus:bg-gray-700 focus:text-white">Liqueurs</SelectItem>
+              <SelectItem value="mixers" className="text-white hover:bg-gray-700 focus:bg-gray-700 focus:text-white">Mixers</SelectItem>
+              <SelectItem value="bitters" className="text-white hover:bg-gray-700 focus:bg-gray-700 focus:text-white">Bitters</SelectItem>
+              <SelectItem value="garnishes" className="text-white hover:bg-gray-700 focus:bg-gray-700 focus:text-white">Garnishes</SelectItem>
+              <SelectItem value="other" className="text-white hover:bg-gray-700 focus:bg-gray-700 focus:text-white">Other</SelectItem>
             </SelectContent>
           </Select>
         </div>
