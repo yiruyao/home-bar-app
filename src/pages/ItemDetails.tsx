@@ -20,6 +20,9 @@ const ItemDetails = () => {
   const [quantity, setQuantity] = useState(1);
   const [item, setItem] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+  const [quantityChanged, setQuantityChanged] = useState(false);
+  const [originalQuantity, setOriginalQuantity] = useState(1);
 
   // Mock data as fallback for when database doesn't have the item
   const mockItems = [
@@ -118,12 +121,14 @@ const ItemDetails = () => {
         if (data && !error) {
           setItem(data);
           setQuantity(data.quantity);
+          setOriginalQuantity(data.quantity);
         } else {
           // Fallback to mock data
           const mockItem = mockItems.find(item => item.id === id);
           if (mockItem) {
             setItem(mockItem);
             setQuantity(mockItem.quantity);
+            setOriginalQuantity(mockItem.quantity);
           }
         }
       } catch (error) {
@@ -133,6 +138,7 @@ const ItemDetails = () => {
         if (mockItem) {
           setItem(mockItem);
           setQuantity(mockItem.quantity);
+          setOriginalQuantity(mockItem.quantity);
         }
       }
       
@@ -147,7 +153,9 @@ const ItemDetails = () => {
   };
 
   const handleQuantityChange = (change: number) => {
-    setQuantity(Math.max(1, quantity + change));
+    const newQuantity = Math.max(1, quantity + change);
+    setQuantity(newQuantity);
+    setQuantityChanged(newQuantity !== originalQuantity);
   };
 
   const handleAddToInventory = () => {
@@ -155,12 +163,14 @@ const ItemDetails = () => {
       title: "Updated Inventory",
       description: `${item?.name || 'Item'} quantity updated to ${quantity}.`,
     });
+    setOriginalQuantity(quantity);
+    setQuantityChanged(false);
     window.location.href = '/';
   };
 
   const handleEdit = () => {
-    // TODO: Implement edit functionality
-    console.log('Edit item');
+    // Navigate to add-item page with current item data for editing
+    window.location.href = `/add-item?edit=${id}&name=${encodeURIComponent(item?.name || '')}&category=${item?.category || ''}&description=${encodeURIComponent(item?.description || '')}&quantity=${quantity}`;
   };
 
   if (loading) {
@@ -220,7 +230,7 @@ const ItemDetails = () => {
       <div className="px-6 py-6">
         {/* Item Info */}
         <div className="space-y-4">
-          <h2 className="text-2xl font-bold font-space-grotesk">{item.name}</h2>
+          <h2 className="text-xl font-bold font-space-grotesk">{item.name}</h2>
           <p className="text-gray-400 font-space-grotesk leading-relaxed">
             {item.description || "No description available."}
           </p>
@@ -229,7 +239,9 @@ const ItemDetails = () => {
         {/* Quantity Section */}
         <div className="mt-8 mb-8">
           <div className="flex items-center justify-between p-4">
-            <span className="text-gray-300 font-space-grotesk">1 bottle</span>
+            <span className="text-gray-300 font-space-grotesk text-left">
+              {quantity} {quantity === 1 ? 'bottle' : 'bottles'}
+            </span>
             <div className="flex items-center space-x-3">
               <button 
                 onClick={() => handleQuantityChange(-1)}
@@ -253,17 +265,20 @@ const ItemDetails = () => {
         {/* Action Buttons */}
         <div className="flex space-x-3 pb-20">
           <Button 
-            variant="ghost"
             onClick={handleEdit}
-            className="px-8 py-3 h-12 text-white bg-gray-700 hover:bg-gray-600 font-space-grotesk rounded-full border-0"
+            className="px-8 py-3 h-12 bg-amber-600 hover:bg-amber-700 text-black font-space-grotesk rounded-full border-0"
           >
             Edit
           </Button>
           <Button 
             onClick={handleAddToInventory}
-            className="flex-1 h-12 bg-amber-600 hover:bg-amber-700 text-black font-space-grotesk font-bold rounded-full"
+            className={`flex-1 h-12 font-space-grotesk font-bold rounded-full transition-colors ${
+              quantityChanged 
+                ? 'bg-amber-600 hover:bg-amber-700 text-black' 
+                : 'bg-gray-700 hover:bg-gray-600 text-white'
+            }`}
           >
-            Add to Inventory
+            Update
           </Button>
         </div>
       </div>
