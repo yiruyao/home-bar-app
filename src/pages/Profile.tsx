@@ -2,9 +2,11 @@ import React from 'react';
 import { ArrowLeft, Grid3X3, Camera, Martini } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
 
 const Profile = () => {
   const { signOut } = useAuth();
+  const navigate = useNavigate();
 
   // Mock test user data
   const testUser = {
@@ -14,12 +16,12 @@ const Profile = () => {
   };
 
   const handleBack = () => {
-    window.location.href = '/';
+    navigate('/');
   };
 
   const handleSignOut = async () => {
     await signOut();
-    window.location.href = '/';
+    navigate('/');
   };
 
   return (
@@ -61,7 +63,7 @@ const Profile = () => {
       {/* Bottom Navigation */}
       <div className="fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-800">
         <div className="flex justify-around items-center py-3">
-          <div className="flex flex-col items-center cursor-pointer" onClick={() => window.location.href = '/'}>
+          <div className="flex flex-col items-center cursor-pointer" onClick={() => navigate('/')}>
             <Grid3X3 className="w-6 h-6 mb-1 text-gray-400" />
             <span className="text-xs font-space-grotesk text-gray-400">Inventory</span>
           </div>
