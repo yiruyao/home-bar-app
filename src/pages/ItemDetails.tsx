@@ -78,13 +78,40 @@ const ItemDetails = () => {
   };
 
   const handleQuantityChange = (change: number) => {
-    const newQuantity = Math.max(1, quantity + change);
+    const newQuantity = Math.max(0, quantity + change);
     setQuantity(newQuantity);
     setQuantityChanged(newQuantity !== originalQuantity);
   };
 
   const handleAddToInventory = async () => {
     try {
+      if (quantity === 0) {
+        // Delete the item
+        const { error } = await supabase
+          .from('items')
+          .delete()
+          .eq('id', item.id);
+
+        if (error) {
+          console.error('Error deleting item:', error);
+          toast({
+            title: "Error",
+            description: "Failed to delete item. Please try again.",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        toast({
+          title: "Item Deleted",
+          description: `${item?.name || 'Item'} has been removed from your inventory.`,
+        });
+        
+        // Navigate back to home
+        navigate('/');
+        return;
+      }
+
       // Update item quantity in database
       const { error } = await supabase
         .from('items')
@@ -226,11 +253,13 @@ const ItemDetails = () => {
             onClick={handleAddToInventory}
             className={`flex-1 h-12 font-space-grotesk font-bold rounded-full transition-colors ${
               quantityChanged 
-                ? 'bg-amber-600 hover:bg-amber-700 text-black' 
+                ? quantity === 0
+                  ? 'bg-red-600 hover:bg-red-700 text-white'
+                  : 'bg-amber-600 hover:bg-amber-700 text-black'
                 : 'bg-gray-700 hover:bg-gray-600 text-white'
             }`}
           >
-            Update
+            {quantity === 0 ? 'Delete' : 'Update'}
           </Button>
         </div>
       </div>
