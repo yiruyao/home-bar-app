@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Plus, Minus, Upload, X, Grid3X3, Camera, Martini, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,6 +21,7 @@ import cranberryJuiceBottle from '@/assets/cranberry-juice-bottle.png';
 type CategoryType = 'spirits' | 'liqueurs' | 'mixers' | 'bitters' | 'garnishes' | 'other';
 
 const AddItem = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -334,7 +336,7 @@ const AddItem = () => {
         });
       }
       
-      window.location.href = '/';
+      navigate('/');
     } catch (error) {
       console.error('Unexpected error:', error);
       toast({
@@ -346,7 +348,7 @@ const AddItem = () => {
   };
 
   const handleBack = () => {
-    window.location.href = '/';
+    navigate('/');
   };
 
   return (
@@ -479,7 +481,7 @@ const AddItem = () => {
       {/* Bottom Navigation */}
       <div className="fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-800">
         <div className="flex justify-around items-center py-3">
-          <div className="flex flex-col items-center cursor-pointer" onClick={() => window.location.href = '/'}>
+          <div className="flex flex-col items-center cursor-pointer" onClick={() => navigate('/')}>
             <Grid3X3 className="w-6 h-6 mb-1 text-white" />
             <span className="text-xs font-space-grotesk text-white">Inventory</span>
           </div>

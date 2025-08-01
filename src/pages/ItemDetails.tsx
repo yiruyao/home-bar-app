@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useLocation } from 'react-router-dom';
+import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Plus, Minus, Grid3X3, Camera, Martini } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
@@ -17,6 +17,7 @@ import cranberryJuiceBottle from '@/assets/cranberry-juice-bottle.png';
 const ItemDetails = () => {
   const { id } = useParams<{ id: string }>();
   const location = useLocation();
+  const navigate = useNavigate();
   const [quantity, setQuantity] = useState(1);
   const [item, setItem] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -200,7 +201,7 @@ const ItemDetails = () => {
   }, [id]);
 
   const handleBack = () => {
-    window.location.href = '/';
+    navigate('/');
   };
 
   const handleQuantityChange = (change: number) => {
@@ -247,7 +248,7 @@ const ItemDetails = () => {
 
   const handleEdit = () => {
     // Navigate to add-item page with current item data for editing
-    window.location.href = `/add-item?edit=${item.id}&name=${encodeURIComponent(item?.name || '')}&category=${item?.category || ''}&description=${encodeURIComponent(item?.description || '')}&quantity=${quantity}`;
+    navigate(`/add-item?edit=${item.id}&name=${encodeURIComponent(item?.name || '')}&category=${item?.category || ''}&description=${encodeURIComponent(item?.description || '')}&quantity=${quantity}`);
   };
 
   if (loading) {
@@ -363,7 +364,7 @@ const ItemDetails = () => {
       {/* Bottom Navigation */}
       <div className="fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-800">
         <div className="flex justify-around items-center py-3">
-          <div className="flex flex-col items-center cursor-pointer" onClick={() => window.location.href = '/'}>
+          <div className="flex flex-col items-center cursor-pointer" onClick={() => navigate('/')}>
             <Grid3X3 className="w-6 h-6 mb-1 text-white" />
             <span className="text-xs font-space-grotesk text-white">Inventory</span>
           </div>
