@@ -168,7 +168,7 @@ const Index = () => {
           <User className="w-6 h-6 cursor-pointer" onClick={() => navigate('/profile')} />
         </div>
 
-        <div className="px-6 py-6">
+        <div className="px-6 py-6 pb-24">{/* Added pb-24 for bottom navigation space */}
           {/* Total Items */}
           <div className="bg-gray-800 rounded-lg p-4 mb-6 flex items-center justify-between">
             <div>
@@ -198,10 +198,14 @@ const Index = () => {
                     className="cursor-pointer hover:opacity-80 transition-opacity"
                     onClick={() => navigate(`/item/${item.id}`)}
                   >
-                    <div className={`${getCategoryColor(category)} rounded-lg p-4 aspect-square flex items-center justify-center`}>
-                      <div className="text-6xl">{getCategoryEmoji(category)}</div>
+                    <div className="rounded-lg overflow-hidden aspect-square">
+                      <img 
+                        src={item.picture_url} 
+                        alt={item.name}
+                        className="w-full h-full object-cover"
+                      />
                     </div>
-                    <p className="text-white font-semibold font-space-grotesk text-sm mt-2 text-center">
+                    <p className="text-white font-normal font-space-grotesk text-sm mt-2 text-left">
                       {item.name}
                     </p>
                   </div>
@@ -217,7 +221,7 @@ const Index = () => {
             <div className="flex flex-col items-center">
               <Grid3X3 className="w-6 h-6 mb-1" />
               <span className="text-xs font-space-grotesk text-white">Inventory</span>
-            </div>
+        </div>
             <div className="flex flex-col items-center">
               <Camera className="w-6 h-6 mb-1 text-gray-400" />
               <span className="text-xs font-space-grotesk text-gray-400">Scan</span>
