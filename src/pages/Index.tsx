@@ -195,15 +195,15 @@ const Index = () => {
                 {(categoryItems as any[]).map((item: any) => (
                   <div 
                     key={item.id} 
-                    className={`${getCategoryColor(category)} rounded-lg p-4 aspect-square flex flex-col items-center justify-between cursor-pointer hover:opacity-80 transition-opacity`}
+                    className="cursor-pointer hover:opacity-80 transition-opacity"
                     onClick={() => navigate(`/item/${item.id}`)}
                   >
-                    <div className="text-6xl">{getCategoryEmoji(category)}</div>
-                    <div className="text-center">
-                      <p className="text-black font-semibold font-space-grotesk text-sm">
-                        {item.name}
-                      </p>
+                    <div className={`${getCategoryColor(category)} rounded-lg p-4 aspect-square flex items-center justify-center`}>
+                      <div className="text-6xl">{getCategoryEmoji(category)}</div>
                     </div>
+                    <p className="text-white font-semibold font-space-grotesk text-sm mt-2 text-center">
+                      {item.name}
+                    </p>
                   </div>
                 ))}
               </div>
