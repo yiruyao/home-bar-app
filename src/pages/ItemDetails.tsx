@@ -137,9 +137,14 @@ const ItemDetails = () => {
       // Fallback to mock data for simple IDs or when database fetch fails
       const mockItem = mockItems.find(item => item.id === id);
       if (mockItem) {
-        setItem(mockItem);
-        setQuantity(mockItem.quantity);
-        setOriginalQuantity(mockItem.quantity);
+        // Check if there's an updated quantity in localStorage
+        const savedQuantities = localStorage.getItem('mockItemQuantities');
+        const quantities = savedQuantities ? JSON.parse(savedQuantities) : {};
+        const savedQuantity = quantities[id] || mockItem.quantity;
+        
+        setItem({ ...mockItem, quantity: savedQuantity });
+        setQuantity(savedQuantity);
+        setOriginalQuantity(savedQuantity);
       }
       
       setLoading(false);
@@ -164,7 +169,12 @@ const ItemDetails = () => {
       const isMockId = /^\d+$/.test(id);
       
       if (isMockId && item) {
-        // For mock items, just show success message without database operation
+        // For mock items, save to localStorage and show success
+        const savedQuantities = localStorage.getItem('mockItemQuantities');
+        const quantities = savedQuantities ? JSON.parse(savedQuantities) : {};
+        quantities[id] = quantity;
+        localStorage.setItem('mockItemQuantities', JSON.stringify(quantities));
+        
         toast({
           title: "Updated Inventory", 
           description: `${item.name} quantity updated to ${quantity}.`,
