@@ -228,13 +228,12 @@ const ItemDetails = () => {
 
         {/* Quantity Section */}
         <div className="mt-8 mb-8">
-          <h3 className="text-lg font-bold font-space-grotesk mb-4">Quantity</h3>
-          <div className="flex items-center justify-between bg-gray-800 rounded-md p-4">
-            <span className="text-gray-300 font-space-grotesk">Bottles/Units</span>
-            <div className="flex items-center space-x-4">
+          <div className="flex items-center justify-between bg-gray-800 rounded-lg p-4">
+            <span className="text-gray-300 font-space-grotesk">1 bottle</span>
+            <div className="flex items-center space-x-3">
               <button 
                 onClick={() => handleQuantityChange(-1)}
-                className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center hover:bg-gray-600"
+                className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center hover:bg-gray-600 transition-colors"
               >
                 <Minus className="w-4 h-4 text-white" />
               </button>
@@ -243,7 +242,7 @@ const ItemDetails = () => {
               </span>
               <button 
                 onClick={() => handleQuantityChange(1)}
-                className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center hover:bg-gray-600"
+                className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center hover:bg-gray-600 transition-colors"
               >
                 <Plus className="w-4 h-4 text-white" />
               </button>
@@ -252,17 +251,17 @@ const ItemDetails = () => {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex space-x-4 pb-20">
+        <div className="flex space-x-3 pb-20">
           <Button 
             variant="outline"
             onClick={handleEdit}
-            className="flex-1 h-12 text-white border-gray-600 hover:bg-gray-800 font-space-grotesk"
+            className="px-8 py-3 h-12 text-white border-gray-600 bg-gray-700 hover:bg-gray-600 font-space-grotesk rounded-full"
           >
             Edit
           </Button>
           <Button 
             onClick={handleAddToInventory}
-            className="flex-1 h-12 bg-amber-600 hover:bg-amber-700 text-black font-space-grotesk font-bold"
+            className="flex-1 h-12 bg-amber-600 hover:bg-amber-700 text-black font-space-grotesk font-bold rounded-full"
           >
             Add to Inventory
           </Button>
