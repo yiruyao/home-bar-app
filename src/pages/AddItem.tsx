@@ -226,34 +226,68 @@ const AddItem = () => {
       const mockUser = { id: 'mock-user-yiru-yao' };
       
       if (isEditing && editingItemId) {
-        // Update existing item
-        const { data, error } = await supabase
-          .from('items')
-          .update({
-            name: formData.title.trim(),
-            category: formData.category as CategoryType,
-            description: formData.description.trim() || null,
-            quantity: formData.quantity,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', editingItemId)
-          .select()
-          .single();
+        // Check if this is a mock item ID
+        const isMockId = /^\d+$/.test(editingItemId);
+        
+        if (isMockId) {
+          // For mock items, create a new database entry instead of updating
+          const { data, error } = await supabase
+            .from('items')
+            .insert({
+              name: formData.title.trim(),
+              category: formData.category as CategoryType,
+              description: formData.description.trim() || null,
+              quantity: formData.quantity,
+              user_id: mockUser.id,
+              picture_url: imagePreview // Use the current image preview (could be original or new)
+            })
+            .select()
+            .single();
 
-        if (error) {
-          console.error('Error updating item:', error);
+          if (error) {
+            console.error('Error creating database item:', error);
+            toast({
+              title: "Error",
+              description: "Failed to save item. Please try again.",
+              variant: "destructive",
+            });
+            return;
+          }
+
           toast({
-            title: "Error",
-            description: "Failed to update item. Please try again.",
-            variant: "destructive",
+            title: "Item Saved",
+            description: `${formData.title} has been saved to the database.`,
           });
-          return;
-        }
+        } else {
+          // Update existing database item
+          const { data, error } = await supabase
+            .from('items')
+            .update({
+              name: formData.title.trim(),
+              category: formData.category as CategoryType,
+              description: formData.description.trim() || null,
+              quantity: formData.quantity,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', editingItemId)
+            .select()
+            .single();
 
-        toast({
-          title: "Item Updated",
-          description: `${formData.title} has been updated successfully.`,
-        });
+          if (error) {
+            console.error('Error updating item:', error);
+            toast({
+              title: "Error",
+              description: "Failed to update item. Please try again.",
+              variant: "destructive",
+            });
+            return;
+          }
+
+          toast({
+            title: "Item Updated",
+            description: `${formData.title} has been updated successfully.`,
+          });
+        }
       } else {
         // Insert new item
         const { data, error } = await supabase

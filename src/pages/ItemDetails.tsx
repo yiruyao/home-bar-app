@@ -163,21 +163,46 @@ const ItemDetails = () => {
       // Check if this is a mock item ID (simple numbers)
       const isMockId = /^\d+$/.test(id);
       
-      if (isMockId) {
-        // For mock items, just show success message without database update
+      if (isMockId && item) {
+        // For mock items, create a new database entry and redirect to it
+        const mockUserId = 'mock-user-yiru-yao';
+        
+        const { data, error } = await supabase
+          .from('items')
+          .insert({
+            name: item.name,
+            category: item.category,
+            description: item.description || null,
+            quantity: quantity,
+            user_id: mockUserId,
+            picture_url: item.picture_url
+          })
+          .select()
+          .single();
+
+        if (error) {
+          console.error('Error creating database item:', error);
+          toast({
+            title: "Error",
+            description: "Failed to save changes. Please try again.",
+            variant: "destructive",
+          });
+          return;
+        }
+
         toast({
           title: "Updated Inventory",
-          description: `${item?.name || 'Item'} quantity updated to ${quantity}.`,
+          description: `${item.name} quantity updated to ${quantity} and saved to database.`,
         });
-        setOriginalQuantity(quantity);
-        setQuantityChanged(false);
+
+        // Redirect to the new database item
+        window.location.href = `/item/${data.id}`;
         return;
       }
 
       // For real database items, update in database
       const mockUserId = 'mock-user-yiru-yao';
       
-      // Update quantity in database
       const { error } = await supabase
         .from('items')
         .update({ 
