@@ -134,11 +134,12 @@ const Index = () => {
         }
       } as any);
 
-      // Fetch items from database
+      // Fetch items from database (exclude soft-deleted items)
       const { data, error } = await supabase
         .from('items')
         .select('*')
         .eq('user_id', mockUserId)
+        .is('deleted_at', null)
         .order('created_at', { ascending: true });
 
       if (data && !error) {

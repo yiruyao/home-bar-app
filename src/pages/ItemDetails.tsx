@@ -53,12 +53,13 @@ const ItemDetails = () => {
         }
       } as any);
 
-      // Fetch item from database
+      // Fetch item from database (exclude soft-deleted items)
       const { data, error } = await supabase
         .from('items')
         .select('*')
         .eq('id', id)
         .eq('user_id', mockUserId)
+        .is('deleted_at', null)
         .maybeSingle();
 
       if (data && !error) {
@@ -86,10 +87,13 @@ const ItemDetails = () => {
   const handleAddToInventory = async () => {
     try {
       if (quantity === 0) {
-        // Delete the item
+        // Soft delete the item by setting deleted_at timestamp
         const { error } = await supabase
           .from('items')
-          .delete()
+          .update({ 
+            deleted_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          })
           .eq('id', item.id);
 
         if (error) {
