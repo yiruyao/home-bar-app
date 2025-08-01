@@ -1,9 +1,25 @@
 import React from 'react';
 import { ArrowLeft, Grid3X3, Camera, Martini } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useAuth } from '@/hooks/useAuth';
 
 const Profile = () => {
+  const { signOut } = useAuth();
+
+  // Mock test user data
+  const testUser = {
+    first_name: 'Yiru',
+    last_name: 'Yao',
+    email: 'yiru82@gmail.com'
+  };
+
   const handleBack = () => {
-    window.history.back();
+    window.location.href = '/';
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    window.location.href = '/';
   };
 
   return (
@@ -27,8 +43,19 @@ const Profile = () => {
         </div>
 
         {/* User Info */}
-        <h2 className="text-2xl font-bold font-space-grotesk mb-2">Yiru Yao</h2>
-        <p className="text-gray-400 font-space-grotesk">yiru82@gmail.com</p>
+        <h2 className="text-2xl font-bold font-space-grotesk mb-2">{testUser.first_name} {testUser.last_name}</h2>
+        <p className="text-gray-400 font-space-grotesk">{testUser.email}</p>
+      </div>
+
+      {/* Sign Out Button */}
+      <div className="px-6 pb-20">
+        <Button 
+          onClick={handleSignOut}
+          variant="outline"
+          className="w-full transition-all duration-300 hover:scale-105 border-gray-600 text-white hover:bg-gray-800 font-space-grotesk"
+        >
+          Sign Out
+        </Button>
       </div>
 
       {/* Bottom Navigation */}

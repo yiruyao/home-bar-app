@@ -14,8 +14,6 @@ const Index = () => {
   const { user, loading, signInWithProvider, signOut } = useAuth();
   const navigate = useNavigate();
   const [authLoading, setAuthLoading] = useState<'google' | 'apple' | null>(null);
-  const [items, setItems] = useState<any[]>([]);
-  const [itemsLoading, setItemsLoading] = useState(false);
 
   // Mock test user data
   const testUser = {
@@ -24,36 +22,87 @@ const Index = () => {
     email: 'yiru82@gmail.com'
   };
 
-  // Fetch user's items
-  const fetchItems = async () => {
-    setItemsLoading(true);
-    try {
-      const { data: { user: currentUser } } = await supabase.auth.getUser();
-      if (currentUser) {
-        const { data, error } = await supabase
-          .from('items')
-          .select('*')
-          .eq('user_id', currentUser.id)
-          .order('created_at', { ascending: false });
-        
-        if (!error && data) {
-          setItems(data);
-        }
-      }
-    } catch (error) {
-      console.error('Error fetching items:', error);
+  // Mock inventory data for demonstration
+  const mockItems = [
+    // Spirits
+    {
+      id: '1',
+      name: 'Rittenhouse Rye Whiskey',
+      category: 'spirits',
+      description: 'A 100-proof straight rye whiskey perfect for classic cocktails like Manhattans and Old Fashioneds.',
+      quantity: 1,
+      picture_url: 'https://images.unsplash.com/photo-1569529465841-dfecdab7503b?w=400'
+    },
+    {
+      id: '2', 
+      name: "Hendrick's Gin",
+      category: 'spirits',
+      description: 'A distinctive gin infused with cucumber and rose petals, offering a unique botanical profile.',
+      quantity: 1,
+      picture_url: 'https://images.unsplash.com/photo-1544145945-f90425340c7e?w=400'
+    },
+    {
+      id: '3',
+      name: 'Espolòn Tequila Blanco', 
+      category: 'spirits',
+      description: 'A premium 100% blue agave tequila with bright, crisp flavor perfect for margaritas.',
+      quantity: 1,
+      picture_url: 'https://images.unsplash.com/photo-1606467278097-3e6a3eaa4fb8?w=400'
+    },
+    // Liqueurs
+    {
+      id: '4',
+      name: 'Cointreau Triple Sec',
+      category: 'liqueurs', 
+      description: 'Premium French orange liqueur made from sweet and bitter orange peels.',
+      quantity: 1,
+      picture_url: 'https://images.unsplash.com/photo-1578912996078-305d92249aa6?w=400'
+    },
+    {
+      id: '5',
+      name: 'Disaronno Amaretto',
+      category: 'liqueurs',
+      description: 'Italian almond liqueur with a distinctive sweet almond flavor and smooth finish.',
+      quantity: 1, 
+      picture_url: 'https://images.unsplash.com/photo-1541532713592-79a0317b6b9d?w=400'
+    },
+    {
+      id: '6',
+      name: 'Kahlúa Coffee Liqueur',
+      category: 'liqueurs',
+      description: 'Rich Mexican coffee liqueur made with rum, sugar, and arabica coffee.',
+      quantity: 1,
+      picture_url: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=400'
+    },
+    // Mixers
+    {
+      id: '7',
+      name: 'Fever-Tree Tonic Water',
+      category: 'mixers',
+      description: 'Premium tonic water made with natural quinine from the Congo.',
+      quantity: 4,
+      picture_url: 'https://images.unsplash.com/photo-1605029103232-bc7cf0f3b3df?w=400'
+    },
+    {
+      id: '8', 
+      name: 'Q Ginger Beer',
+      category: 'mixers',
+      description: 'Artisanal ginger beer with real ginger and agave. Perfect for Moscow Mules.',
+      quantity: 2,
+      picture_url: 'https://images.unsplash.com/photo-1639317632997-4e1bfed3c294?w=400'
+    },
+    {
+      id: '9',
+      name: 'Ocean Spray Cranberry Juice',
+      category: 'mixers', 
+      description: 'Classic cranberry juice cocktail with sweet-tart flavor.',
+      quantity: 1,
+      picture_url: 'https://images.unsplash.com/photo-1582434142716-405ea16e8df8?w=400'
     }
-    setItemsLoading(false);
-  };
-
-  useEffect(() => {
-    if (user) {
-      fetchItems();
-    }
-  }, [user]);
+  ];
 
   // Group items by category
-  const itemsByCategory = items.reduce((acc, item) => {
+  const itemsByCategory = mockItems.reduce((acc, item) => {
     if (!acc[item.category]) {
       acc[item.category] = [];
     }
@@ -124,7 +173,7 @@ const Index = () => {
             <div>
               <p className="text-gray-400 text-sm font-space-grotesk">Total Items</p>
               <p className="text-3xl font-bold font-space-grotesk">
-                {itemsLoading ? '...' : items.length}
+                {mockItems.length}
               </p>
             </div>
             <button 
@@ -136,62 +185,32 @@ const Index = () => {
           </div>
 
           {/* Items by Category */}
-          {itemsLoading ? (
-            <div className="text-center py-8">
-              <div className="w-8 h-8 border-4 border-white border-t-transparent rounded-full animate-spin mx-auto" />
-              <p className="text-gray-400 mt-2 font-space-grotesk">Loading items...</p>
-            </div>
-          ) : (
-            Object.keys(itemsByCategory).length > 0 ? (
-              Object.entries(itemsByCategory).map(([category, categoryItems]) => (
-                <div key={category} className="mb-8">
-                  <h2 className="text-lg font-bold mb-4 font-space-grotesk capitalize">
-                    {category} ({(categoryItems as any[]).length})
-                  </h2>
-                  <div className="grid grid-cols-2 gap-4">
-                    {(categoryItems as any[]).map((item: any) => (
-                      <div 
-                        key={item.id} 
-                        className={`${getCategoryColor(category)} rounded-lg p-4 aspect-square flex flex-col items-center justify-between cursor-pointer hover:opacity-80 transition-opacity`}
-                        onClick={() => navigate(`/item/${item.id}`)}
-                      >
-                        <div className="text-6xl">{getCategoryEmoji(category)}</div>
-                        <div className="text-center">
-                          <p className="text-black font-semibold font-space-grotesk text-sm">
-                            {item.name}
-                          </p>
-                          <p className="text-black text-xs font-space-grotesk opacity-75">
-                            Qty: {item.quantity}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
+          {Object.entries(itemsByCategory).map(([category, categoryItems]) => (
+            <div key={category} className="mb-8">
+              <h2 className="text-lg font-bold mb-4 font-space-grotesk capitalize">
+                {category} ({(categoryItems as any[]).length})
+              </h2>
+              <div className="grid grid-cols-2 gap-4">
+                {(categoryItems as any[]).map((item: any) => (
+                  <div 
+                    key={item.id} 
+                    className={`${getCategoryColor(category)} rounded-lg p-4 aspect-square flex flex-col items-center justify-between cursor-pointer hover:opacity-80 transition-opacity`}
+                    onClick={() => navigate(`/item/${item.id}`)}
+                  >
+                    <div className="text-6xl">{getCategoryEmoji(category)}</div>
+                    <div className="text-center">
+                      <p className="text-black font-semibold font-space-grotesk text-sm">
+                        {item.name}
+                      </p>
+                      <p className="text-black text-xs font-space-grotesk opacity-75">
+                        Qty: {item.quantity}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              ))
-            ) : (
-              <div className="text-center py-8">
-                <p className="text-gray-400 font-space-grotesk mb-4">No items in your inventory yet</p>
-                <Button 
-                  onClick={() => navigate('/add-item')}
-                  className="bg-amber-600 hover:bg-amber-700 text-black font-space-grotesk"
-                >
-                  Add Your First Item
-                </Button>
+                ))}
               </div>
-            )
-          )}
-
-          {/* Sign Out Button */}
-          <div className="mt-8 text-center">
-            <Button 
-              onClick={handleSignOut}
-              variant="outline"
-              className="transition-all duration-300 hover:scale-105 border-gray-600 text-white hover:bg-gray-800 font-space-grotesk"
-            >
-              Sign Out
-            </Button>
-          </div>
+            </div>
+          ))}
         </div>
 
         {/* Bottom Navigation */}
