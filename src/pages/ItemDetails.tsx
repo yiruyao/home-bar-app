@@ -171,6 +171,8 @@ const ItemDetails = () => {
             setItem(newItem);
             setQuantity(newItem.quantity);
             setOriginalQuantity(newItem.quantity);
+            // Update the URL to use the database ID
+            window.history.replaceState(null, '', `/item/${newItem.id}`);
           } else {
             // Fallback to mock data
             setItem(mockItem);
@@ -212,6 +214,50 @@ const ItemDetails = () => {
 
   const handleAddToInventory = async () => {
     try {
+      // Check if this item doesn't have a database ID yet (still using mock ID)
+      const isMockId = /^\d+$/.test(item.id.toString());
+      
+      if (isMockId) {
+        // Convert mock item to database item first
+        const { data: newItem, error } = await supabase
+          .from('items')
+          .insert({
+            name: item.name,
+            category: item.category as 'spirits' | 'liqueurs' | 'mixers' | 'bitters' | 'garnishes' | 'other',
+            description: item.description || null,
+            quantity: quantity,
+            user_id: mockUserId,
+            picture_url: item.picture_url
+          })
+          .select()
+          .single();
+
+        if (error) {
+          console.error('Error creating database item:', error);
+          toast({
+            title: "Error",
+            description: "Failed to update quantity. Please try again.",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        // Update component state with new database item
+        setItem(newItem);
+        setOriginalQuantity(quantity);
+        setQuantityChanged(false);
+        
+        // Update URL to use database ID
+        window.history.replaceState(null, '', `/item/${newItem.id}`);
+        
+        toast({
+          title: "Updated Inventory",
+          description: `${item.name} quantity updated to ${quantity}.`,
+        });
+        return;
+      }
+
+      // For existing database items, update directly
       const { error } = await supabase
         .from('items')
         .update({ 
