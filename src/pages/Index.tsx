@@ -2,163 +2,37 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
+import { useItems } from '@/hooks/useItems';
+import { useProfile } from '@/hooks/useProfile';
 import AuthButton from '@/components/auth/AuthButton';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Toaster } from '@/components/ui/toaster';
-import { User, Grid3X3, Camera, Martini, Plus } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { User, Plus } from 'lucide-react';
 import cocktailShakerHero from '@/assets/cocktail-hero-updated.png';
-import whiskeyBottle from '@/assets/whiskey-bottle.png';
-import ginBottle from '@/assets/gin-bottle.png';
-import tequilaBottle from '@/assets/tequila-bottle.png';
-import orangeLiqueurBottle from '@/assets/orange-liqueur-bottle.png';
-import amarettoBottle from '@/assets/amaretto-bottle.png';
-import coffeeLiqueurBottle from '@/assets/coffee-liqueur-bottle.png';
-import tonicWaterBottle from '@/assets/tonic-water-bottle.png';
-import gingerBeerBottle from '@/assets/ginger-beer-bottle.png';
-import cranberryJuiceBottle from '@/assets/cranberry-juice-bottle.png';
+import { ItemImage } from '@/components/ItemImage';
 
 const Index = () => {
-  console.log('Index component rendering');
   const { user, loading, signInWithProvider, signOut } = useAuth();
   const navigate = useNavigate();
+  const { items, itemsByCategory, isLoading: itemsLoading } = useItems();
+  const { profile, isLoading: profileLoading } = useProfile();
   const [authLoading, setAuthLoading] = useState<'google' | 'apple' | null>(null);
-  const [items, setItems] = useState<any[]>([]);
-  const [itemsLoading, setItemsLoading] = useState(true);
 
-  // Mock user ID for database queries
-  const mockUserId = '12345678-1234-1234-1234-123456789012';
-
-  // Mock test user data
-  const testUser = {
-    first_name: 'Yiru',
-    last_name: 'Yao',
-    email: 'yiru82@gmail.com'
-  };
-
-  // Mock inventory data for demonstration
-  const mockItems = [
-    // Spirits
-    {
-      id: '1',
-      name: 'Rittenhouse Rye Whiskey',
-      category: 'spirits',
-      description: 'A 100-proof straight rye whiskey perfect for classic cocktails like Manhattans and Old Fashioneds.',
-      quantity: 1,
-      picture_url: whiskeyBottle
-    },
-    {
-      id: '2', 
-      name: "Hendrick's Gin",
-      category: 'spirits',
-      description: 'A distinctive gin infused with cucumber and rose petals, offering a unique botanical profile.',
-      quantity: 1,
-      picture_url: ginBottle
-    },
-    {
-      id: '3',
-      name: 'Espolòn Tequila Blanco', 
-      category: 'spirits',
-      description: 'A premium 100% blue agave tequila with bright, crisp flavor perfect for margaritas.',
-      quantity: 1,
-      picture_url: tequilaBottle
-    },
-    // Liqueurs
-    {
-      id: '4',
-      name: 'Cointreau Triple Sec',
-      category: 'liqueurs', 
-      description: 'Premium French orange liqueur made from sweet and bitter orange peels.',
-      quantity: 1,
-      picture_url: orangeLiqueurBottle
-    },
-    {
-      id: '5',
-      name: 'Disaronno Amaretto',
-      category: 'liqueurs',
-      description: 'Italian almond liqueur with a distinctive sweet almond flavor and smooth finish.',
-      quantity: 1, 
-      picture_url: amarettoBottle
-    },
-    {
-      id: '6',
-      name: 'Kahlúa Coffee Liqueur',
-      category: 'liqueurs',
-      description: 'Rich Mexican coffee liqueur made with rum, sugar, and arabica coffee.',
-      quantity: 1,
-      picture_url: coffeeLiqueurBottle
-    },
-    // Mixers
-    {
-      id: '7',
-      name: 'Fever-Tree Tonic Water',
-      category: 'mixers',
-      description: 'Premium tonic water made with natural quinine from the Congo.',
-      quantity: 4,
-      picture_url: tonicWaterBottle
-    },
-    {
-      id: '8', 
-      name: 'Q Ginger Beer',
-      category: 'mixers',
-      description: 'Artisanal ginger beer with real ginger and agave. Perfect for Moscow Mules.',
-      quantity: 2,
-      picture_url: gingerBeerBottle
-    },
-    {
-      id: '9',
-      name: 'Ocean Spray Cranberry Juice',
-      category: 'mixers', 
-      description: 'Classic cranberry juice cocktail with sweet-tart flavor.',
-      quantity: 1,
-      picture_url: cranberryJuiceBottle
-    }
-  ];
-
-  // Load items from database
+  // Prevent document scrolling on home page
   useEffect(() => {
-    const loadItems = async () => {
-      // Set up mock authentication
-      await supabase.auth.setSession({
-        access_token: 'mock-access-token',
-        refresh_token: 'mock-refresh-token',
-        user: {
-          id: mockUserId,
-          email: 'yiru.yao@example.com',
-          user_metadata: { name: 'Yiru Yao' },
-          app_metadata: {},
-          aud: 'authenticated',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        }
-      } as any);
-
-      // Fetch items from database (exclude soft-deleted items)
-      const { data, error } = await supabase
-        .from('items')
-        .select('*')
-        .eq('user_id', mockUserId)
-        .is('deleted_at', null)
-        .order('created_at', { ascending: true });
-
-      if (data && !error) {
-        setItems(data);
-      }
-      setItemsLoading(false);
+    // Add class to body to prevent scrolling
+    document.body.classList.add('home-page-active');
+    
+    return () => {
+      // Clean up - remove class when leaving page
+      document.body.classList.remove('home-page-active');
     };
-
-    loadItems();
   }, []);
 
-  // Group items by category
-  const itemsByCategory = items.reduce((acc, item) => {
-    if (!acc[item.category]) {
-      acc[item.category] = [];
-    }
-    acc[item.category].push(item);
-    return acc;
-  }, {} as Record<string, any[]>);
+
+  // Get the user's first name for display
+  const firstName = profile?.first_name || 
+    (user?.user_metadata?.name ? user.user_metadata.name.split(' ')[0] : '') || 
+    'User';
 
   // Get emoji for category
   const getCategoryEmoji = (category: string) => {
@@ -188,9 +62,14 @@ const Index = () => {
 
   const handleAuth = async (provider: 'google' | 'apple') => {
     setAuthLoading(provider);
-    await signInWithProvider(provider);
+    try {
+      await signInWithProvider(provider);
+    } catch (error) {
+      // Silent error handling
+    }
     setAuthLoading(null);
   };
+
 
   const handleSignOut = async () => {
     await signOut();
@@ -204,20 +83,29 @@ const Index = () => {
     );
   }
 
-  // Temporary: Show authenticated view for testing
-  const showAuthenticatedView = true;
-
-  if (user || showAuthenticatedView) {
+  // Show authenticated view only if user is actually logged in
+  if (user) {
     return (
-      <div className="min-h-screen bg-black text-white">
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-800">
+      <div className="home-page-container bg-black text-white" style={{ height: '100vh', width: '100vw', position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, overflow: 'hidden' }}>
+        {/* Header - Fixed */}
+        <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-6 py-4 bg-black border-b border-gray-800 safe-area-top z-50" style={{ position: 'fixed', top: 0 }}>
           <div className="w-6 h-6" /> {/* Spacer for centering */}
-          <h1 className="text-xl font-bold font-space-grotesk text-center">{testUser.first_name}'s Bar</h1>
-          <User className="w-6 h-6 cursor-pointer" onClick={() => navigate('/profile')} />
+          <h1 className="text-xl font-bold font-space-grotesk text-center">{firstName}'s Bar</h1>
+          <User className="w-6 h-6 cursor-pointer" onClick={() => navigate('/profile', { replace: true })} />
         </div>
 
-        <div className="px-6 py-6 pb-24">{/* Added pb-24 for bottom navigation space */}
+        {/* Scrollable content area */}
+        <div 
+          className="absolute left-0 right-0 overflow-y-auto px-6 py-6 pb-24" 
+          style={{ 
+            top: '120px', 
+            bottom: '83px', 
+            position: 'absolute',
+            overscrollBehavior: 'contain',
+            touchAction: 'pan-y',
+            WebkitOverflowScrolling: 'touch'
+          }}
+        >
           {/* Total Items */}
           <div className="bg-gray-800 rounded-lg p-4 mb-6 flex items-center justify-between">
             <div>
@@ -227,7 +115,7 @@ const Index = () => {
               </p>
             </div>
             <button 
-              onClick={() => navigate('/add-item')}
+              onClick={() => navigate('/add-item', { replace: true })}
               className="w-10 h-10 bg-amber-600 rounded-full flex items-center justify-center hover:bg-amber-700 transition-colors"
             >
               <Plus className="w-5 h-5 text-black" />
@@ -250,10 +138,10 @@ const Index = () => {
                     <div 
                       key={item.id} 
                       className="cursor-pointer hover:opacity-80 transition-opacity"
-                      onClick={() => navigate(`/item/${item.id}`)}
+                      onClick={() => navigate(`/item/${item.id}`, { replace: true })}
                     >
                       <div className="rounded-lg overflow-hidden aspect-square">
-                        <img 
+                        <ItemImage 
                           src={item.picture_url} 
                           alt={item.name}
                           className="w-full h-full object-cover"
@@ -270,27 +158,11 @@ const Index = () => {
           )}
         </div>
 
-        {/* Bottom Navigation */}
-        <div className="fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-800">
-          <div className="flex justify-around items-center py-3">
-            <div className="flex flex-col items-center">
-              <Grid3X3 className="w-6 h-6 mb-1" />
-              <span className="text-xs font-space-grotesk text-white">Inventory</span>
-        </div>
-            <div className="flex flex-col items-center">
-              <Camera className="w-6 h-6 mb-1 text-gray-400" />
-              <span className="text-xs font-space-grotesk text-gray-400">Scan</span>
-            </div>
-            <div className="flex flex-col items-center">
-              <Martini className="w-6 h-6 mb-1 text-gray-400" />
-              <span className="text-xs font-space-grotesk text-gray-400">Mix</span>
-            </div>
-          </div>
-        </div>
         <Toaster />
       </div>
     );
   }
+
 
   return (
     <div className="min-h-screen flex flex-col bg-black">
@@ -329,6 +201,7 @@ const Index = () => {
               loading={authLoading === 'apple'}
               className="w-full h-12 text-sm rounded-full font-space-grotesk"
             />
+
           </div>
         </div>
       </div>

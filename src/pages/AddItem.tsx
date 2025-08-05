@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Minus, Upload, X, Grid3X3, Camera, Martini, ChevronDown } from 'lucide-react';
+import { ArrowLeft, Plus, Minus, Upload, X, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -8,6 +8,8 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { uploadImage, getImageUrl } from '@/lib/storage';
+import { generateBottleImagePrompt, generateBottleImage } from '@/lib/image-generation';
 import whiskeyBottle from '@/assets/whiskey-bottle.png';
 import ginBottle from '@/assets/gin-bottle.png';
 import tequilaBottle from '@/assets/tequila-bottle.png';
@@ -22,6 +24,18 @@ type CategoryType = 'spirits' | 'liqueurs' | 'mixers' | 'bitters' | 'garnishes' 
 
 const AddItem = () => {
   const navigate = useNavigate();
+
+  // Prevent document scrolling on add item page
+  useEffect(() => {
+    // Add class to body to prevent scrolling
+    document.body.classList.add('add-item-page-active');
+    
+    return () => {
+      // Clean up - remove class when leaving page
+      document.body.classList.remove('add-item-page-active');
+    };
+  }, []);
+
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -109,7 +123,7 @@ const AddItem = () => {
     }
   ];
 
-  // Handle URL parameters for editing
+  // Handle URL parameters for editing or pre-filling from bottle identification
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const editId = urlParams.get('edit');
@@ -117,8 +131,11 @@ const AddItem = () => {
     const category = urlParams.get('category');
     const description = urlParams.get('description');
     const quantity = urlParams.get('quantity');
+    const editMode = urlParams.get('edit_mode');
+    const capturedImage = urlParams.get('capturedImage');
 
     if (editId && name) {
+      // Editing existing item
       setIsEditing(true);
       setEditingItemId(editId);
       setFormData({
@@ -131,6 +148,20 @@ const AddItem = () => {
       
       // Fetch the item to get the picture URL
       fetchItemForEdit(editId);
+    } else if (name) {
+      // Pre-filling from bottle identification (not editing existing item)
+      setFormData({
+        title: decodeURIComponent(name),
+        description: description ? decodeURIComponent(description) : '',
+        category: category as CategoryType || '',
+        quantity: quantity ? parseInt(quantity) : 1,
+        image: null
+      });
+      
+      // Set the captured image as preview if available
+      if (capturedImage) {
+        setImagePreview(decodeURIComponent(capturedImage));
+      }
     }
   }, []);
 
@@ -156,7 +187,15 @@ const AddItem = () => {
         .single();
 
       if (data && data.picture_url) {
-        setImagePreview(data.picture_url);
+        // Convert storage path to signed URL for preview
+        try {
+          const signedUrl = await getImageUrl(data.picture_url);
+          setImagePreview(signedUrl);
+        } catch (imageError) {
+          console.error('Error getting signed URL for image:', imageError);
+          // Fallback to raw URL in case it's already a full URL
+          setImagePreview(data.picture_url);
+        }
       }
     } catch (error) {
       console.error('Error fetching item for edit:', error);
@@ -242,6 +281,113 @@ const AddItem = () => {
         }
       } as any);
       
+      // Handle image upload to Supabase storage
+      let pictureUrl = null;
+      if (formData.image) {
+        try {
+          console.log('📤 Uploading image to baritems bucket...');
+          
+          // Generate unique filename
+          const fileExt = formData.image.name.split('.').pop();
+          const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+          
+          console.log('📝 Generated filename:', fileName);
+          
+          const uploadResult = await uploadImage(formData.image, fileName);
+          pictureUrl = fileName; // Store just the filename
+          
+          console.log('✅ Image uploaded successfully:', fileName);
+          
+          toast({
+            title: "Image Uploaded",
+            description: "Image uploaded successfully!",
+          });
+        } catch (uploadError) {
+          console.error('❌ Image upload failed:', uploadError);
+          toast({
+            title: "Upload Error",
+            description: "Failed to upload image. Item will be saved without image.",
+            variant: "destructive",
+          });
+        }
+      } else if (imagePreview && imagePreview.startsWith('data:')) {
+        // Handle captured base64 image from scan
+        try {
+          console.log('📤 Uploading captured image to baritems bucket...');
+          
+          // Convert base64 to blob
+          const response = await fetch(imagePreview);
+          const blob = await response.blob();
+          
+          // Generate unique filename
+          const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.jpg`;
+          
+          console.log('📝 Generated filename for captured image:', fileName);
+          
+          // Create File object from blob
+          const file = new File([blob], fileName, { type: 'image/jpeg' });
+          const uploadResult = await uploadImage(file, fileName);
+          pictureUrl = fileName; // Store just the filename
+          
+          console.log('✅ Captured image uploaded successfully:', fileName);
+          
+          toast({
+            title: "Image Uploaded",
+            description: "Captured image uploaded successfully!",
+          });
+        } catch (uploadError) {
+          console.error('❌ Captured image upload failed:', uploadError);
+          toast({
+            title: "Upload Error",
+            description: "Failed to upload captured image. Item will be saved without image.",
+            variant: "destructive",
+          });
+        }
+      }
+      
+      // Generate AI image if no image is provided
+      if (!pictureUrl && !imagePreview) {
+        try {
+          console.log('🎨 No image provided, generating AI image...');
+          
+          const prompt = generateBottleImagePrompt(
+            formData.title, 
+            formData.category as CategoryType, 
+            formData.description
+          );
+          
+          console.log('🖼️ Generated prompt:', prompt);
+          
+          const generatedImageUrl = await generateBottleImage(prompt);
+          
+          if (generatedImageUrl) {
+            // Download the generated image and upload to Supabase storage
+            const response = await fetch(generatedImageUrl);
+            const blob = await response.blob();
+            
+            // Generate unique filename
+            const fileName = `ai-${Date.now()}-${Math.random().toString(36).substring(2)}.jpg`;
+            
+            console.log('📝 Generated AI image filename:', fileName);
+            
+            // Create File object from blob
+            const file = new File([blob], fileName, { type: 'image/jpeg' });
+            const uploadResult = await uploadImage(file, fileName);
+            pictureUrl = fileName; // Store just the filename
+            
+            console.log('✅ AI generated image uploaded successfully:', fileName);
+            
+            toast({
+              title: "Image Generated",
+              description: "AI generated a product image for your bottle!",
+            });
+          }
+        } catch (aiError) {
+          console.error('❌ AI image generation failed:', aiError);
+          // Don't show error toast, just continue without image
+        }
+      }
+      
       if (isEditing && editingItemId) {
         // Check if this is a mock item ID
         const isMockId = /^\d+$/.test(editingItemId);
@@ -256,7 +402,7 @@ const AddItem = () => {
               description: formData.description.trim() || null,
               quantity: formData.quantity,
               user_id: mockUserId,
-              picture_url: imagePreview // Use the current image preview (could be original or new)
+              picture_url: pictureUrl // Use uploaded filename or null
             })
             .select()
             .single();
@@ -277,15 +423,22 @@ const AddItem = () => {
           });
         } else {
           // Update existing database item
+          const updateData: any = {
+            name: formData.title.trim(),
+            category: formData.category as CategoryType,
+            description: formData.description.trim() || null,
+            quantity: formData.quantity,
+            updated_at: new Date().toISOString()
+          };
+          
+          // Only update picture_url if a new image was uploaded
+          if (pictureUrl) {
+            updateData.picture_url = pictureUrl;
+          }
+          
           const { data, error } = await supabase
             .from('items')
-            .update({
-              name: formData.title.trim(),
-              category: formData.category as CategoryType,
-              description: formData.description.trim() || null,
-              quantity: formData.quantity,
-              updated_at: new Date().toISOString()
-            })
+            .update(updateData)
             .eq('id', editingItemId)
             .select()
             .single();
@@ -315,7 +468,7 @@ const AddItem = () => {
             description: formData.description.trim() || null,
             quantity: formData.quantity,
             user_id: mockUserId,
-            picture_url: null // We'll handle image upload later
+            picture_url: pictureUrl // Use uploaded filename or null
           })
           .select()
           .single();
@@ -336,7 +489,7 @@ const AddItem = () => {
         });
       }
       
-      navigate('/');
+      navigate('/', { replace: true });
     } catch (error) {
       console.error('Unexpected error:', error);
       toast({
@@ -348,20 +501,30 @@ const AddItem = () => {
   };
 
   const handleBack = () => {
-    navigate('/');
+    navigate('/', { replace: true });
   };
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      {/* Header */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-gray-800">
+    <div className="add-item-page-container bg-black text-white" style={{ height: '100vh', width: '100vw', position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, overflow: 'hidden' }}>
+      {/* Header - Fixed */}
+      <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-6 py-4 bg-black border-b border-gray-800 safe-area-top z-50" style={{ position: 'fixed', top: 0 }}>
         <ArrowLeft className="w-6 h-6 cursor-pointer" onClick={handleBack} />
-        <h1 className="text-xl font-bold font-space-grotesk">{isEditing ? 'Edit Item' : 'Add Item'}</h1>
+        <h1 className="text-xl font-bold font-space-grotesk text-center">{isEditing ? 'Edit Item' : 'Add Item'}</h1>
         <div className="w-6 h-6" /> {/* Spacer for centering */}
       </div>
 
-      {/* Form Content */}
-      <div className="px-6 py-6 space-y-6">
+      {/* Scrollable form content area */}
+      <div 
+        className="absolute left-0 right-0 overflow-y-auto px-6 py-6 space-y-6" 
+        style={{ 
+          top: '120px', 
+          bottom: '83px', 
+          position: 'absolute',
+          overscrollBehavior: 'contain',
+          touchAction: 'pan-y',
+          WebkitOverflowScrolling: 'touch'
+        }}
+      >
         {/* Title */}
         <div className="space-y-2">
           <Label htmlFor="title" className="text-white font-space-grotesk">Title</Label>
@@ -478,23 +641,6 @@ const AddItem = () => {
         </div>
       </div>
 
-      {/* Bottom Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-800">
-        <div className="flex justify-around items-center py-3">
-          <div className="flex flex-col items-center cursor-pointer" onClick={() => navigate('/')}>
-            <Grid3X3 className="w-6 h-6 mb-1 text-white" />
-            <span className="text-xs font-space-grotesk text-white">Inventory</span>
-          </div>
-          <div className="flex flex-col items-center">
-            <Camera className="w-6 h-6 mb-1 text-gray-400" />
-            <span className="text-xs font-space-grotesk text-gray-400">Scan</span>
-          </div>
-          <div className="flex flex-col items-center">
-            <Martini className="w-6 h-6 mb-1 text-gray-400" />
-            <span className="text-xs font-space-grotesk text-gray-400">Mix</span>
-          </div>
-        </div>
-      </div>
     </div>
   );
 };

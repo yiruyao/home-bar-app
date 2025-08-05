@@ -110,7 +110,286 @@ All colors MUST be HSL.
     @apply border-border;
   }
 
+  html {
+    background-color: #000000;
+    overscroll-behavior: none;
+    margin: 0 !important;
+    padding: 0 !important;
+    height: 100%;
+    box-sizing: border-box;
+  }
+
   body {
-    @apply bg-background text-foreground;
+    background-color: #000000;
+    color: white;
+    /* iOS optimizations */
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior: none;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box;
+  }
+
+  /* iOS safe area handling - normal layout */
+  #root {
+    min-height: 100vh;
+    min-height: 100dvh;
+    overflow-x: hidden;
+    background-color: #000000;
+    /* Only apply safe area padding to avoid interfering with normal scrolling */
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+    margin: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    box-sizing: border-box;
+  }
+
+  /* Clean flexbox layout - no padding needed */
+
+  /* Safe area top padding for headers - forced padding when contentInset is 'never' */
+  .safe-area-top {
+    /* Force adequate padding for status bar + notch area - works even when env() fails */
+    padding-top: 60px !important;
+  }
+
+  /* Improve touch interactions */
+  button, [role="button"], a {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  /* Smooth scrolling for iOS */
+  * {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* iOS keyboard handling */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* iOS input styling to prevent zoom */
+  input[type="text"], input[type="email"], input[type="search"], textarea {
+    font-size: 16px !important;
+    -webkit-appearance: none;
+    border-radius: 8px;
+  }
+
+  /* Hide tab bar when keyboard appears (iOS Safari behavior) */
+  @media screen and (max-height: 500px) {
+    .ios-tab-bar {
+      display: none;
+    }
+  }
+
+  /* Chat layout adjustments */
+  .chat-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    height: 100dvh;
+  }
+
+  .chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+  }
+
+  .chat-input {
+    flex-shrink: 0;
+  }
+
+  /* Clean up - removed unused fixed layout styles */
+
+  /* iOS Tab Bar - Simple fixed positioning with smooth transitions */
+  .ios-tab-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0, 0, 0, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 0.5px solid rgba(255, 255, 255, 0.1);
+    z-index: 1000;
+    margin: 0 !important;
+    padding: 0 !important;
+    transition: none; /* Disable transitions to prevent flash */
+  }
+
+  /* Smooth page transitions to reduce flash */
+  .home-page-container,
+  .mix-page-container,
+  .add-item-page-container,
+  .profile-page-container {
+    opacity: 1;
+    transition: none; /* Remove any transitions that might cause flash */
+  }
+
+  /* Scan page - prevent all scrolling */
+  .scan-page {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    overflow: hidden !important;
+    background: black !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  /* Mix page - simple chat input positioning */
+  .chat-input-area {
+    position: fixed !important;
+    will-change: transform;
+    transform: translateZ(0); /* Force hardware acceleration */
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Ensure fixed elements stay fixed during scroll */
+  .fixed {
+    transform: translateZ(0); /* Force hardware acceleration */
+    will-change: transform;
+  }
+
+  /* Prevent overscroll and rubber band effect */
+  body {
+    overscroll-behavior: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Mix page - completely prevent whole page scrolling */
+  .mix-page-container {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    overflow: hidden !important;
+    overscroll-behavior: none !important;
+  }
+
+  /* Prevent document scrolling on mix page */
+  body.mix-page-active {
+    overflow: hidden !important;
+    position: fixed !important;
+    width: 100% !important;
+    height: 100% !important;
+    overscroll-behavior: none !important;
+  }
+
+  /* Home page - completely prevent whole page scrolling */
+  .home-page-container {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    overflow: hidden !important;
+    overscroll-behavior: none !important;
+  }
+
+  /* Prevent document scrolling on home page */
+  body.home-page-active {
+    overflow: hidden !important;
+    position: fixed !important;
+    width: 100% !important;
+    height: 100% !important;
+    overscroll-behavior: none !important;
+  }
+
+  /* Prevent document scrolling on scan page */
+  body.scan-page-active {
+    overflow: hidden !important;
+    position: fixed !important;
+    width: 100% !important;
+    height: 100% !important;
+    overscroll-behavior: none !important;
+  }
+
+  /* Prevent document scrolling on add item page */
+  body.add-item-page-active {
+    overflow: hidden !important;
+    position: fixed !important;
+    width: 100% !important;
+    height: 100% !important;
+    overscroll-behavior: none !important;
+  }
+
+  /* Prevent document scrolling on profile page */
+  body.profile-page-active {
+    overflow: hidden !important;
+    position: fixed !important;
+    width: 100% !important;
+    height: 100% !important;
+    overscroll-behavior: none !important;
+  }
+
+  .scan-content {
+    width: 90% !important;
+    max-width: 320px !important;
+    max-height: 70vh !important;
+    overflow: hidden !important;
+    text-align: center !important;
+  }
+
+  /* Remove unused tab bar container styles */
+
+  /* Scan page - full screen fixed */
+  .scan-page {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    overflow: hidden !important;
+    background: black !important;
+  }
+
+  .scan-content {
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    width: 90% !important;
+    max-width: 320px !important;
+    max-height: 70vh !important;
+    overflow: hidden !important;
+  }
+
+  /* iOS keyboard fixes */
+  input, textarea, select {
+    font-size: 16px;
+    -webkit-appearance: none;
+    border-radius: 0;
+  }
+
+  /* Prevent zoom on double tap */
+  * {
+    touch-action: pan-x pan-y;
+  }
+
+  /* Loading states optimized for mobile */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-out;
   }
 }
