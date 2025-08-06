@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-        <string>Home Bar App</string>
+        <string>Home Bar</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -91,7 +91,7 @@
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>com.homebarapp.app</string>
-				<string>753886834180-gdeje4hs5co1jokgo4jvu50pqurq256s</string>
+				<string>com.googleusercontent.apps.753886834180-gdeje4hs5co1jokgo4jvu50pqurq256s</string>
 			</array>
 		</dict>
 	</array>
