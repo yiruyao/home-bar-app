@@ -5,9 +5,8 @@ import { useNavigate } from 'react-router-dom';
 import { useItems } from '@/hooks/useItems';
 import { useProfile } from '@/hooks/useProfile';
 import AuthButton from '@/components/auth/AuthButton';
-import { Toaster } from '@/components/ui/toaster';
 import { User, Plus } from 'lucide-react';
-import cocktailShakerHero from '@/assets/cocktail-hero-updated.png';
+import landingImage from '@/assets/landing.png';
 import { ItemImage } from '@/components/ItemImage';
 
 const Index = () => {
@@ -16,6 +15,7 @@ const Index = () => {
   const { items, itemsByCategory, isLoading: itemsLoading } = useItems();
   const { profile, isLoading: profileLoading } = useProfile();
   const [authLoading, setAuthLoading] = useState<'google' | 'apple' | null>(null);
+  
 
   // Prevent document scrolling on home page
   useEffect(() => {
@@ -77,7 +77,7 @@ const Index = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-hero">
+      <div className="min-h-screen flex items-center justify-center bg-black">
         <div className="w-8 h-8 border-4 border-white border-t-transparent rounded-full animate-spin" />
       </div>
     );
@@ -91,7 +91,7 @@ const Index = () => {
         <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-6 py-4 bg-black border-b border-gray-800 safe-area-top z-50" style={{ position: 'fixed', top: 0 }}>
           <div className="w-6 h-6" /> {/* Spacer for centering */}
           <h1 className="text-xl font-bold font-space-grotesk text-center">{firstName}'s Bar</h1>
-          <User className="w-6 h-6 cursor-pointer" onClick={() => navigate('/profile', { replace: true })} />
+          <User className="w-6 h-6 cursor-pointer" onClick={() => navigate('/profile')} />
         </div>
 
         {/* Scrollable content area */}
@@ -115,7 +115,7 @@ const Index = () => {
               </p>
             </div>
             <button 
-              onClick={() => navigate('/add-item', { replace: true })}
+              onClick={() => navigate('/add-item')}
               className="w-10 h-10 bg-amber-600 rounded-full flex items-center justify-center hover:bg-amber-700 transition-colors"
             >
               <Plus className="w-5 h-5 text-black" />
@@ -138,7 +138,7 @@ const Index = () => {
                     <div 
                       key={item.id} 
                       className="cursor-pointer hover:opacity-80 transition-opacity"
-                      onClick={() => navigate(`/item/${item.id}`, { replace: true })}
+                      onClick={() => navigate(`/item/${item.id}`)}
                     >
                       <div className="rounded-lg overflow-hidden aspect-square">
                         <ItemImage 
@@ -158,7 +158,6 @@ const Index = () => {
           )}
         </div>
 
-        <Toaster />
       </div>
     );
   }
@@ -167,23 +166,26 @@ const Index = () => {
   return (
     <div className="min-h-screen flex flex-col bg-black">
       {/* Hero Section with Full Image */}
-      <div className="flex items-center justify-center">
-        <img 
-          src={cocktailShakerHero}
-          alt="Cocktail Hero"
-          className="max-w-full h-auto"
+      <div className="flex items-center justify-center mb-4">
+        <img
+          src={landingImage}
+          alt="Home Bar App"
+          className="max-w-full h-auto block"
+          style={{ minHeight: '400px', objectFit: 'cover' }}
         />
       </div>
 
       {/* Bottom Section with Auth */}
-      <div className="bg-black px-6 py-12">
-        <div className="max-w-sm mx-auto text-center space-y-6">
-          <div className="space-y-3">
+      <div className="bg-black px-6 pt-0 pb-6">
+        <div className="max-w-sm mx-auto text-center space-y-4">
+          <div className="space-y-2">
+          
+          
             <h1 className="text-xl font-bold text-white font-space-grotesk">
               Welcome to Home Bar
             </h1>
             <p className="text-gray-300 text-sm leading-relaxed font-space-grotesk">
-              Manage your home bar inventory and get cocktail inspirations.
+              Manage inventory and get cocktail inspirations
             </p>
           </div>
           
@@ -205,7 +207,6 @@ const Index = () => {
           </div>
         </div>
       </div>
-      <Toaster />
     </div>
   );
 };

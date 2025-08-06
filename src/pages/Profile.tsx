@@ -3,6 +3,7 @@ import { ArrowLeft, User, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
+import { useImageUrl } from '@/hooks/useImageUrl';
 import { useNavigate } from 'react-router-dom';
 import { Camera as CapacitorCamera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { Capacitor } from '@capacitor/core';
@@ -12,6 +13,11 @@ const Profile = () => {
   const navigate = useNavigate();
   const { profile, isLoading, uploadProfileImage, isUploadingImage, uploadImageError } = useProfile();
   const [showPlusOverlay, setShowPlusOverlay] = useState(false);
+  
+  
+  // Get the profile image URL using the unified image system
+  const { imageUrl: profileImageUrl, loading: imageLoading, error: imageError } = useImageUrl(profile?.picture_url || '');
+  
 
   // Prevent document scrolling on profile page
   useEffect(() => {
@@ -25,12 +31,17 @@ const Profile = () => {
   }, []);
 
   const handleBack = () => {
-    navigate('/', { replace: true });
+    navigate(-1); // Go back in history instead of replacing
   };
 
   const handleSignOut = async () => {
-    await signOut();
-    // No need to navigate - App.tsx will automatically redirect to landing page when user becomes null
+    // Navigate to home BEFORE signing out to clear router state
+    navigate('/', { replace: true });
+    
+    // Small delay to ensure navigation state is updated
+    setTimeout(async () => {
+      await signOut();
+    }, 100);
   };
 
   const handleAvatarClick = () => {
@@ -49,12 +60,12 @@ const Profile = () => {
 
       // Open photo library
       const image = await CapacitorCamera.getPhoto({
-        quality: 80,
+        quality: 75,
         allowEditing: true,
         resultType: CameraResultType.DataUrl,
         source: CameraSource.Photos,
-        width: 400,
-        height: 400
+        width: 300,
+        height: 300
       });
 
       if (image.dataUrl) {
@@ -107,9 +118,9 @@ const Profile = () => {
             className="w-32 h-32 rounded-full bg-gradient-to-br from-orange-300 to-orange-400 flex items-center justify-center overflow-hidden cursor-pointer relative"
             onClick={handleAvatarClick}
           >
-            {profile?.picture_url ? (
+            {profileImageUrl ? (
               <img 
-                src={profile.picture_url} 
+                src={profileImageUrl} 
                 alt="Profile Avatar" 
                 className="w-full h-full object-cover"
               />

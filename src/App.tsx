@@ -1,8 +1,6 @@
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation, useNavigate } from "react-router-dom";
 import Index from "./pages/Index";
 import Profile from "./pages/Profile";
 import AddItem from "./pages/AddItem";
@@ -14,6 +12,7 @@ import ScrollToTop from "./components/ScrollToTop";
 import IOSTabBar from "./components/IOSTabBar";
 import { useNativeIntegration } from "./hooks/useNativeIntegration";
 import { useAuth } from "./hooks/useAuth";
+import { useEffect } from "react";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -30,7 +29,15 @@ const queryClient = new QueryClient({
 
 const AppContent = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { user, loading } = useAuth();
+  
+  // Fix router state inconsistency between React Router and browser location
+  useEffect(() => {
+    if (!loading && location.pathname !== window.location.pathname) {
+      navigate(window.location.pathname, { replace: true });
+    }
+  }, [location.pathname, loading, navigate]);
   
   // Show tab bar only on authenticated app pages
   const showTabBar = user && (['/', '/mix', '/scan', '/profile', '/add-item'].includes(location.pathname) || location.pathname.startsWith('/item/'));
@@ -70,8 +77,6 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <Toaster />
-        <Sonner />
         <BrowserRouter>
           <AppContent />
         </BrowserRouter>

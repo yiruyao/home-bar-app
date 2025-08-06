@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Send, Bot, User } from 'lucide-react';
+import { ArrowLeft, Send, Bot, User, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useItems } from '@/hooks/useItems';
 import { createClaudeSupabaseAPI, formatConversationHistory } from '@/lib/claude-supabase';
@@ -15,6 +15,10 @@ interface Message {
   timestamp: Date;
 }
 
+// Local storage key for chat history
+const CHAT_STORAGE_KEY = 'home-bar-chat-history';
+const MAX_CONTEXT_MESSAGES = 10; // Limit context to last 10 messages for API efficiency
+
 const Mix = () => {
   const navigate = useNavigate();
   const { items: userInventory, isLoading: inventoryLoading } = useItems();
@@ -25,6 +29,59 @@ const Mix = () => {
   const [apiKeyPrompted, setApiKeyPrompted] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Load chat history from localStorage on component mount
+  const loadChatHistory = () => {
+    try {
+      const savedMessages = localStorage.getItem(CHAT_STORAGE_KEY);
+      if (savedMessages) {
+        const parsedMessages = JSON.parse(savedMessages).map((msg: any) => ({
+          ...msg,
+          timestamp: new Date(msg.timestamp)
+        }));
+        console.log('📚 Loaded', parsedMessages.length, 'messages from localStorage');
+        return parsedMessages;
+      }
+    } catch (error) {
+      console.error('Error loading chat history:', error);
+    }
+    return [];
+  };
+
+  // Save chat history to localStorage
+  const saveChatHistory = (messages: Message[]) => {
+    try {
+      localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(messages));
+      console.log('💾 Saved', messages.length, 'messages to localStorage');
+    } catch (error) {
+      console.error('Error saving chat history:', error);
+    }
+  };
+
+  // Clear chat history
+  const clearChatHistory = () => {
+    setMessages([]);
+    localStorage.removeItem(CHAT_STORAGE_KEY);
+    console.log('🗑️ Chat history cleared');
+    
+    // Create new welcome message with current inventory
+    if (userInventory !== undefined && !inventoryLoading) {
+      const inventoryCount = userInventory?.length || 0;
+      const welcomeContent = claudeAPI
+        ? `🍸 Hey there! I'm your personal mixologist AI powered by Claude. I can see you have ${inventoryCount} items in your bar inventory. Ask me for cocktail recommendations, recipes, or anything drink-related!`
+        : `🍸 Hey there! I'm your personal mixologist AI. To use the AI features, you'll need to set your Claude API key. For now, I can see you have ${inventoryCount} items in your inventory. Ask me anything about cocktails!`;
+      
+      const welcomeMessage: Message = {
+        id: 'welcome',
+        role: 'assistant',
+        content: welcomeContent,
+        timestamp: new Date()
+      };
+      const newMessages = [welcomeMessage];
+      setMessages(newMessages);
+      saveChatHistory(newMessages);
+    }
+  };
 
   // Prevent document scrolling on mix page
   useEffect(() => {
@@ -53,10 +110,13 @@ const Mix = () => {
     initializeApp();
   }, []);
 
-  // Auto-scroll to bottom when new messages are added
+  // Auto-scroll to bottom when new messages are added or chat history is loaded
   useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    if (messagesEndRef.current && messages.length > 0) {
+      // Use a small delay to ensure DOM is fully rendered
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
     }
   }, [messages]);
 
@@ -91,19 +151,15 @@ const Mix = () => {
       // Set initial position after component mounts
       const initializeInputPosition = () => {
         const inputArea = document.querySelector('.chat-input-area') as HTMLElement;
-        const tabBarHeight = getTabBarHeight();
         if (inputArea) {
-          // Position to overlap slightly with tab bar border to eliminate visual gap
-          const adjustedHeight = tabBarHeight - 1; // Overlap 1px to hide gap
-          inputArea.style.bottom = `${adjustedHeight}px`;
+          // Position above tab bar with padding space (99px)
+          inputArea.style.bottom = '99px';
           inputArea.style.transform = 'translateY(0px)';
           inputArea.style.transition = 'bottom 0.25s ease-out';
           inputArea.style.visibility = 'visible';
           inputArea.style.opacity = '1';
           inputArea.style.display = 'block';
-          inputArea.style.marginBottom = '0px'; // Remove any margin
-          // No padding on container - padding handled by inner div
-          console.log('Initial input area positioned with 1px overlap above tab bar:', adjustedHeight);
+          console.log('Initial input area positioned above tab bar at 99px');
         }
       };
 
@@ -122,7 +178,6 @@ const Mix = () => {
           inputArea.style.zIndex = '1001';
           inputArea.style.visibility = 'visible';
           inputArea.style.opacity = '1';
-          inputArea.style.marginBottom = '0px'; // Remove any margin
           console.log('Input area positioned flush at bottom:', info.keyboardHeight);
         }
         // Hide tab bar when keyboard is up
@@ -137,18 +192,15 @@ const Mix = () => {
       const hideListener = Keyboard.addListener('keyboardWillHide', () => {
         console.log('Keyboard will hide');
         const inputArea = document.querySelector('.chat-input-area') as HTMLElement;
-        const tabBarHeight = getTabBarHeight();
         if (inputArea) {
-          // Position with 1px overlap to eliminate visual gap
-          const adjustedHeight = tabBarHeight - 1; // Overlap with tab bar border
-          inputArea.style.bottom = `${adjustedHeight}px`;
+          // Position above tab bar with padding space (99px)
+          inputArea.style.bottom = '99px';
           inputArea.style.transform = 'translateY(0px)';
           inputArea.style.transition = 'bottom 0.25s ease-out';
-          inputArea.style.zIndex = '100';
+          inputArea.style.zIndex = '1000';
           inputArea.style.visibility = 'visible';
           inputArea.style.opacity = '1';
-          inputArea.style.marginBottom = '0px'; // Remove any margin
-          console.log('Input area positioned with 1px overlap above tab bar:', adjustedHeight);
+          console.log('Input area positioned above tab bar at 99px');
         }
         const tabBar = document.querySelector('.ios-tab-bar') as HTMLElement;
         if (tabBar) {
@@ -160,18 +212,15 @@ const Mix = () => {
       const didHideListener = Keyboard.addListener('keyboardDidHide', () => {
         console.log('Keyboard did hide (backup handler)');
         const inputArea = document.querySelector('.chat-input-area') as HTMLElement;
-        const tabBarHeight = getTabBarHeight();
         if (inputArea) {
-          // Position with 1px overlap to eliminate visual gap (backup)
-          const adjustedHeight = tabBarHeight - 1; // Overlap with tab bar border
-          inputArea.style.bottom = `${adjustedHeight}px`;
+          // Position above tab bar with padding space (99px) (backup)
+          inputArea.style.bottom = '99px';
           inputArea.style.transform = 'translateY(0px)';
           inputArea.style.transition = 'bottom 0.25s ease-out';
-          inputArea.style.zIndex = '100';
+          inputArea.style.zIndex = '1000';
           inputArea.style.visibility = 'visible';
           inputArea.style.opacity = '1';
-          inputArea.style.marginBottom = '0px'; // Remove any margin
-          console.log('Input area positioned with 1px overlap above tab bar (backup):', adjustedHeight);
+          console.log('Input area positioned above tab bar at 99px (backup)');
         }
         const tabBar = document.querySelector('.ios-tab-bar') as HTMLElement;
         if (tabBar) {
@@ -188,16 +237,33 @@ const Mix = () => {
     }
   }, []);
 
-  // Add welcome message after inventory is loaded
+  // Initialize chat history and welcome message
   useEffect(() => {
-    // Only show welcome message after we have inventory loaded and no messages exist
-    if (messages.length === 0 && userInventory && !inventoryLoading) {
-      console.log('🎯 Setting welcome message with inventory:', userInventory.length);
-      console.log('🔑 API available:', !!claudeAPI);
+    // Load saved messages first
+    const savedMessages = loadChatHistory();
+    
+    if (savedMessages.length > 0) {
+      // Use saved messages if they exist
+      setMessages(savedMessages);
+      console.log('📚 Restored chat history with', savedMessages.length, 'messages');
       
+      // Scroll to bottom after loading chat history
+      setTimeout(() => {
+        if (messagesEndRef.current) {
+          messagesEndRef.current.scrollIntoView({ behavior: 'instant' });
+        }
+      }, 200);
+    } else if (userInventory !== undefined && !inventoryLoading) {
+      // Only create welcome message if no saved messages and inventory is loaded (including empty arrays)
+      console.log('🎯 Creating new welcome message with inventory:', userInventory?.length || 0);
+      console.log('🔑 API available:', !!claudeAPI);
+      console.log('📊 Inventory loading state:', inventoryLoading);
+      console.log('📦 Inventory data:', userInventory);
+      
+      const inventoryCount = userInventory?.length || 0;
       const welcomeContent = claudeAPI
-        ? `🍸 Hey there! I'm your personal mixologist AI powered by Claude. I can see you have ${userInventory.length} items in your bar inventory. Ask me for cocktail recommendations, recipes, or anything drink-related!`
-        : `🍸 Hey there! I'm your personal mixologist AI. To use the AI features, you'll need to set your Claude API key. For now, I can see you have ${userInventory.length} items in your inventory. Ask me anything about cocktails!`;
+        ? `🍸 Hey there! I'm your personal mixologist AI powered by Claude. I can see you have ${inventoryCount} items in your bar inventory. Ask me for cocktail recommendations, recipes, or anything drink-related!`
+        : `🍸 Hey there! I'm your personal mixologist AI. To use the AI features, you'll need to set your Claude API key. For now, I can see you have ${inventoryCount} items in your inventory. Ask me anything about cocktails!`;
       
       const welcomeMessage: Message = {
         id: 'welcome',
@@ -205,9 +271,18 @@ const Mix = () => {
         content: welcomeContent,
         timestamp: new Date()
       };
-      setMessages([welcomeMessage]);
+      const newMessages = [welcomeMessage];
+      setMessages(newMessages);
+      saveChatHistory(newMessages);
     }
-  }, [userInventory, inventoryLoading, messages.length, claudeAPI]);
+  }, [userInventory, inventoryLoading, claudeAPI]);
+
+  // Save messages whenever they change
+  useEffect(() => {
+    if (messages.length > 0) {
+      saveChatHistory(messages);
+    }
+  }, [messages]);
 
   const sendMessage = async () => {
     if (!inputValue.trim() || isLoading) return;
@@ -294,10 +369,12 @@ const Mix = () => {
     }
 
     try {
-      // Get conversation history for context
-      const conversationHistory = formatConversationHistory(
-        messages.filter(m => m.id !== 'welcome')
-      );
+      // Get optimized conversation history for context (exclude welcome, limit to recent messages)
+      const recentMessages = messages
+        .filter(m => m.id !== 'welcome')
+        .slice(-MAX_CONTEXT_MESSAGES); // Only send last N messages for efficiency
+      
+      const conversationHistory = formatConversationHistory(recentMessages);
 
       console.log('🔄 Using Claude Supabase API for request');
       console.log('📊 Request details:', {
@@ -363,7 +440,11 @@ const Mix = () => {
     <div className="mix-page-container bg-black text-white" style={{ height: '100vh', width: '100vw', position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, overflow: 'hidden' }}>
       {/* Header - Absolutely fixed and cannot move */}
       <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-6 py-4 bg-black border-b border-gray-800 safe-area-top z-50" style={{ position: 'fixed', top: 0 }}>
-        <div className="w-6 h-6" /> {/* Spacer for centering */}
+        <Trash2 
+          className="w-6 h-6 text-gray-400 hover:text-red-400 cursor-pointer transition-colors" 
+          onClick={clearChatHistory}
+          title="Clear chat history"
+        />
         <h1 className="text-xl font-bold font-space-grotesk text-center">Chat</h1>
         <Bot className="w-6 h-6 text-amber-500 cursor-pointer" onClick={runDiagnostics} />
       </div>
@@ -443,8 +524,8 @@ const Mix = () => {
       </div>
 
       {/* Input Area - Fixed at bottom with precise positioning - NO CONTAINER PADDING OR BORDER */}
-      <div className="chat-input-area fixed left-0 right-0 bg-black" style={{ bottom: '0px', zIndex: 1000 }}>
-        <div className="flex space-x-2 p-4" style={{ paddingBottom: 'calc(16px + env(safe-area-inset-bottom))' }}>
+      <div className="chat-input-area fixed left-0 right-0 bg-black" style={{ bottom: '99px', zIndex: 1000 }}>
+        <div className="flex items-center space-x-2 px-4 py-4">
           <input
             ref={inputRef}
             type="text"
@@ -452,7 +533,7 @@ const Mix = () => {
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={handleKeyPress}
             placeholder="Ask for cocktail recipes, recommendations..."
-            className="flex-1 bg-gray-800 border border-gray-700 text-white placeholder-gray-400 font-space-grotesk px-3 py-3 rounded-md"
+            className="flex-1 bg-gray-800 border border-gray-700 text-white placeholder-gray-400 font-space-grotesk px-3 rounded-md h-12"
             disabled={isLoading}
             autoComplete="off"
             autoCorrect="off"
@@ -462,7 +543,7 @@ const Mix = () => {
           <Button
             onClick={sendMessage}
             disabled={!inputValue.trim() || isLoading}
-            className="px-4 py-3 bg-amber-600 hover:bg-amber-700 text-black font-space-grotesk flex-shrink-0"
+            className="bg-amber-600 hover:bg-amber-700 text-black font-space-grotesk flex-shrink-0 h-12 px-4"
           >
             <Send className="w-4 h-4" />
           </Button>
